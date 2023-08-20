@@ -1,4 +1,4 @@
-﻿using StagPoint.EDF.V2;
+﻿using StagPoint.EDF.Net;
 
 namespace StagPoint.Edf.Tests;
 

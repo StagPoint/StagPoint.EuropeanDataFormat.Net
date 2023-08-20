@@ -1,26 +1,29 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace StagPoint.EDF.V2;
-
-public static class BufferHelper
+namespace StagPoint.EDF.Net
 {
-	[MethodImpl( MethodImplOptions.AggressiveInlining )]
-	public static void WriteToBuffer( BinaryWriter buffer, string value, int fieldLength )
+	public static class BufferHelper
 	{
-		if( value.Length >= fieldLength )
+		[MethodImpl( MethodImplOptions.AggressiveInlining )]
+		public static void WriteToBuffer( BinaryWriter buffer, string value, int fieldLength )
 		{
-			buffer.Write( Encoding.ASCII.GetBytes( value[ ..fieldLength ] ) );
+			// ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+			if( value.Length >= fieldLength )
+			{
+				buffer.Write( Encoding.ASCII.GetBytes( value.Substring( 0, fieldLength ) ) );
+			}
+			else
+			{
+				buffer.Write( Encoding.ASCII.GetBytes( value.PadRight( fieldLength ) ) );
+			}
 		}
-		else
-		{
-			buffer.Write( Encoding.ASCII.GetBytes( value.PadRight( fieldLength ) ) );
-		}
-	}
 
-	[MethodImpl( MethodImplOptions.AggressiveInlining )]
-	public static string ReadFromBuffer( BinaryReader reader, int fieldLength )
-	{
-		return Encoding.ASCII.GetString( reader.ReadBytes( fieldLength ) ).Trim();
+		[MethodImpl( MethodImplOptions.AggressiveInlining )]
+		public static string ReadFromBuffer( BinaryReader reader, int fieldLength )
+		{
+			return Encoding.ASCII.GetString( reader.ReadBytes( fieldLength ) ).Trim();
+		}
 	}
 }

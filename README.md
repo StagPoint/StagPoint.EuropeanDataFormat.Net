@@ -1,16 +1,14 @@
-[![.NET Core Desktop](https://github.com/StagPoint/StagPoint.EDF.V2/actions/workflows/dotnet-desktop.yml/badge.svg)]
-(https://github.com/StagPoint/StagPoint.EDF.V2/actions/workflows/dotnet-desktop.yml)~~~~
-<a href="https://github.com/StagPoint/StagPoint.EDF.V2/issues">
-    <img src="https://img.shields.io/github/issues/StagPoint/StagPoint.EDF.V2"  alt="Issues"/>
-</a> 
 ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/StagPoint/StagPoint.EDF.V2)
+<a href="https://github.com/StagPoint/StagPoint.EDF.V2/issues">
+<img src="https://img.shields.io/github/issues/StagPoint/StagPoint.EDF.V2"  alt="Issues"/>
+</a>
 <a href="https://github.com/StagPoint/StagPoint.EDF.V2/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2"  alt="License"/>
+<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2"  alt="License"/>
 </a>
 [![Nuget](https://img.shields.io/nuget/v/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
 [![Nuget](https://img.shields.io/nuget/dt/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
 
-# StagPoint.EDF.V2
+# StagPoint.EDF.V2~~~~
 #### .NET library for reading and writing European Data File (EDF) format files
 
 ---
