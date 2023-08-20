@@ -1,9 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>2.0.0</Version>
+        <Title>StagPoint.EDF.Net V2</Title>
+        <Authors>StagPoint</Authors>
+        <Description>Library for reading and writing European Data Format files, written entirely in C#</Description>
+        <Copyright>Copyright 2023 StagPoint.</Copyright>
+        <Company>StagPoint</Company>
+        <Product>StagPoint.EDF.Net V2</Product>
+        <TargetFrameworks>net6.0;net7.0;net47;net48</TargetFrameworks>
     </PropertyGroup>
 
 </Project>

@@ -1,3 +1,15 @@
+[![.NET Core Desktop](https://github.com/StagPoint/StagPoint.EDF.V2/actions/workflows/dotnet-desktop.yml/badge.svg)]
+(https://github.com/StagPoint/StagPoint.EDF.V2/actions/workflows/dotnet-desktop.yml)~~~~
+<a href="https://github.com/StagPoint/StagPoint.EDF.V2/issues">
+    <img src="https://img.shields.io/github/issues/StagPoint/StagPoint.EDF.V2"  alt="Issues"/>
+</a> 
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/StagPoint/StagPoint.EDF.V2)
+<a href="https://github.com/StagPoint/StagPoint.EDF.V2/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2"  alt="License"/>
+</a>
+[![Nuget](https://img.shields.io/nuget/v/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
+[![Nuget](https://img.shields.io/nuget/dt/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
+
 # StagPoint.EDF.V2
 #### .NET library for reading and writing European Data File (EDF) format files
 
@@ -48,17 +60,17 @@ Immediately following the fixed-sized portion of the header record will be a num
 
 Each array will have **NS** (number of signals) elements, in the same order in which the Signals are stored. 
 
-| Size    | Name          | Format             | Description                                           |
-|---------|---------------|--------------------|-------------------------------------------------------|
-| NS * 16 | ASCII String  | Label              | e.g. EEG Fpz-Cz or Body temp                          |
-| NS * 80 | ASCII String  | Transducer Type    | e.g. AgAgCl electrode                                 |
-| NS * 8  | ASCII Integer | Physical Dimension | e.g. uV or degreeC                                    |
-| NS * 8  | ASCII Integer | Physical Minimum   | e.g. -500 or 34                                       |
-| NS * 8  | ASCII Integer | Physical Maximum   | e.g. 500 or 40                                        |
-| NS * 8  | ASCII Integer | Digital Minimum    | e.g. -2048                                            |
-| NS * 8  | ASCII Integer | Digital Maximum    | e.g. 2047                                             |
-| NS * 80 | ASCII String  | Prefiltering       | e.g. HP:0.1Hz LP:75Hz                                 |
-| NS * 8  | ASCII Integer | Number of Samples  | The number of samples for each signal per Data Record |
-| NS * 32 | ASCII String  | Reserved           | Reserved for future use                               |
+| Size    | Name               | Format        | Description                             |
+|---------|--------------------|---------------|-----------------------------------------|
+| NS * 16 | Label              | ASCII String  | e.g. EEG Fpz-Cz or Body temp            |
+| NS * 80 | Transducer Type    | ASCII String  | e.g. AgAgCl electrode                   |
+| NS * 8  | Physical Dimension | ASCII String  | e.g. uV or degreeC                      |
+| NS * 8  | Physical Minimum   | ASCII Integer | e.g. -500 or 34                         |
+| NS * 8  | Physical Maximum   | ASCII Integer | e.g. 500 or 40                          |
+| NS * 8  | Digital Minimum    | ASCII Integer | e.g. -2048                              |
+| NS * 8  | Digital Maximum    | ASCII Integer | e.g. 2047                               |
+| NS * 80 | Prefiltering       | ASCII String  | e.g. HP:0.1Hz LP:75Hz                   |
+| NS * 8  | Number of Samples  | ASCII Integer | The number of samples per Data Record   |
+| NS * 32 | Reserved           | ASCII String  | Reserved for future use                 |
 
 

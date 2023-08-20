@@ -7,7 +7,7 @@ namespace StagPoint.EDF.V2;
 /// the fixed-length requirement. In the Header file, these string must only contain the ASCII characters
 /// 32..126 (inclusive).
 /// </summary>
-public class EdfAsciiString : IEdfHeaderField
+public class EdfAsciiString
 {
 	#region Public properties
 
@@ -57,7 +57,7 @@ public class EdfAsciiString : IEdfHeaderField
 
 	#endregion
 
-	#region IEdfHeaderField interface implementation
+	#region IEdfAsciiValue interface implementation
 
 	public void WriteToBuffer( BinaryWriter buffer )
 	{

@@ -34,10 +34,12 @@ public class EdfAsciiString_Tests
 		// Expect an ArgumentNullException when assigning null to an EdfAsciiString
 		try
 		{
-			stringField.Value = null;
+			stringField.Value = null!;
+			
+			// Test fails if an ArgumentNullException was not thrown
 			Assert.Fail( "Expected an ArgumentNullException" );
 		}
-		catch( ArgumentNullException e ) { }
+		catch( ArgumentNullException ) { }
 	}
 
 	[TestMethod]

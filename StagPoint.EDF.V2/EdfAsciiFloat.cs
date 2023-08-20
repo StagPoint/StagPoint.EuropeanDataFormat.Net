@@ -2,13 +2,15 @@
 
 namespace StagPoint.EDF.V2;
 
-public class EdfAsciiFloat : IEdfHeaderField
+public class EdfAsciiFloat
 {
 	#region Public properties
 
 	public int FieldLength { get; private set; }
 
 	public double Value { get; set; }
+	
+	public bool RequireSignPrefix { get; private set; }
 
 	#endregion
 	
@@ -21,20 +23,21 @@ public class EdfAsciiFloat : IEdfHeaderField
 
 	#region Constructors
 
-	public EdfAsciiFloat( int fieldLength )
+	public EdfAsciiFloat( int fieldLength, bool requireSignPrefix = false )
 	{
-		this.FieldLength = fieldLength;
+		this.FieldLength       = fieldLength;
+		this.RequireSignPrefix = requireSignPrefix;
 	}
 
-	public EdfAsciiFloat( int fieldLength, double value ) 
-		: this( fieldLength )
+	public EdfAsciiFloat( int fieldLength, double value, bool requireSignPrefix = false ) 
+		: this( fieldLength, requireSignPrefix )
 	{
 		this.Value = value;
 	}
 	
 	#endregion 
 
-	#region IEdfHeaderField interface implementation
+	#region IEdfAsciiValue interface implementation
 
 	public void ReadFromBuffer( BinaryReader buffer )
 	{
@@ -49,7 +52,7 @@ public class EdfAsciiFloat : IEdfHeaderField
 		
 		var remainingFieldLength = FieldLength;
 
-		if( this.Value >= 0 )
+		if( RequireSignPrefix && this.Value >= 0 )
 		{
 			buffer.Write( '+' );
 			remainingFieldLength -= 1;

@@ -3,32 +3,35 @@
 /// <summary>
 /// Stores a fixed-length ASCII string representing a whole number. For consistency
 /// </summary>
-public class EdfAsciiInteger : IEdfHeaderField
+public class EdfAsciiInteger
 {
 	#region Public properties
 
 	public int FieldLength { get; private set; }
 
 	public int Value { get; set; }
+	
+	public bool RequireSignPrefix { get; private set; }
 
 	#endregion
-
+	
 	#region Constructors
 
-	public EdfAsciiInteger( int fieldLength )
+	public EdfAsciiInteger( int fieldLength, bool requireSignPrefix = false )
 	{
-		this.FieldLength = fieldLength;
+		this.FieldLength       = fieldLength;
+		this.RequireSignPrefix = requireSignPrefix;
 	}
 
-	public EdfAsciiInteger( int fieldLength, int value ) 
-		: this( fieldLength )
+	public EdfAsciiInteger( int fieldLength, int value, bool forceSignPrefix = false ) 
+		: this( fieldLength, forceSignPrefix )
 	{
 		this.Value = value;
 	}
 	
 	#endregion 
 
-	#region IEdfHeaderField interface implementation
+	#region IEdfAsciiValue interface implementation
 
 	public void ReadFromBuffer( BinaryReader buffer )
 	{
@@ -42,7 +45,7 @@ public class EdfAsciiInteger : IEdfHeaderField
 		var stringVal            = this.Value.ToString();
 		var remainingFieldLength = FieldLength;
 
-		if( this.Value >= 0 )
+		if( RequireSignPrefix && this.Value >= 0 )
 		{
 			buffer.Write( '+' );
 			remainingFieldLength -= 1;
