@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StagPoint.EDF.V2", "StagPoint.EDF.V2\StagPoint.EDF.V2.csproj", "{8807C876-5C8B-499F-A3F6-5AA44D2DC80F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StagPoint.Edf.Tests", "StagPoint.Edf.Tests\StagPoint.Edf.Tests.csproj", "{750D9A0B-B882-41CA-BE55-3080AEE89613}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8807C876-5C8B-499F-A3F6-5AA44D2DC80F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8807C876-5C8B-499F-A3F6-5AA44D2DC80F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8807C876-5C8B-499F-A3F6-5AA44D2DC80F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8807C876-5C8B-499F-A3F6-5AA44D2DC80F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{750D9A0B-B882-41CA-BE55-3080AEE89613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{750D9A0B-B882-41CA-BE55-3080AEE89613}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{750D9A0B-B882-41CA-BE55-3080AEE89613}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{750D9A0B-B882-41CA-BE55-3080AEE89613}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
