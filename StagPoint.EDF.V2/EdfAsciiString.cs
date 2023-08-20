@@ -2,7 +2,12 @@
 
 namespace StagPoint.EDF.V2;
 
-public class EdfStringField : IEdfHeaderField
+/// <summary>
+/// Stores a fixed-length ASCII string, which will be right-padded with spaces as necessary to maintain
+/// the fixed-length requirement. In the Header file, these string must only contain the ASCII characters
+/// 32..126 (inclusive).
+/// </summary>
+public class EdfAsciiString : IEdfHeaderField
 {
 	#region Public properties
 
@@ -33,12 +38,12 @@ public class EdfStringField : IEdfHeaderField
 	
 	#region Constructors
 
-	public EdfStringField( int fieldLength )
+	public EdfAsciiString( int fieldLength )
 	{
 		this.FieldLength = fieldLength;
 	}
 
-	public EdfStringField( int fieldLength, string value ) 
+	public EdfAsciiString( int fieldLength, string value ) 
 		: this( fieldLength )
 	{
 		this.Value = value;
@@ -58,7 +63,7 @@ public class EdfStringField : IEdfHeaderField
 	{
 		if( _value == null )
 		{
-			throw new NullReferenceException( $"The {nameof( Value )} property of the {nameof( EdfStringField )} object was set to NULL" );
+			throw new NullReferenceException( $"The {nameof( Value )} property of the {nameof( EdfAsciiString )} object was set to NULL" );
 		}
 
 		BufferHelper.WriteToBuffer( buffer, _value, FieldLength );
@@ -78,7 +83,7 @@ public class EdfStringField : IEdfHeaderField
 		return _value;
 	}
 
-	public static implicit operator string( EdfStringField field )
+	public static implicit operator string( EdfAsciiString field )
 	{
 		return field._value;
 	}

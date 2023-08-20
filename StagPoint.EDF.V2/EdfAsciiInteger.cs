@@ -1,32 +1,26 @@
-﻿using System.Globalization;
+﻿namespace StagPoint.EDF.V2;
 
-namespace StagPoint.EDF.V2;
-
-public class EdfDoubleField : IEdfHeaderField
+/// <summary>
+/// Stores a fixed-length ASCII string representing a whole number. For consistency
+/// </summary>
+public class EdfAsciiInteger : IEdfHeaderField
 {
 	#region Public properties
 
 	public int FieldLength { get; private set; }
 
-	public double Value { get; set; }
+	public int Value { get; set; }
 
-	#endregion
-	
-	#region Private fields
-	
-	// NOTE: The following only keeps 8 digits of precision. If this is insufficient, this is where you'd change it ;)
-	private const string STRING_FORMAT = "0.########"; 
-	
 	#endregion
 
 	#region Constructors
 
-	public EdfDoubleField( int fieldLength )
+	public EdfAsciiInteger( int fieldLength )
 	{
 		this.FieldLength = fieldLength;
 	}
 
-	public EdfDoubleField( int fieldLength, double value ) 
+	public EdfAsciiInteger( int fieldLength, int value ) 
 		: this( fieldLength )
 	{
 		this.Value = value;
@@ -39,14 +33,13 @@ public class EdfDoubleField : IEdfHeaderField
 	public void ReadFromBuffer( BinaryReader buffer )
 	{
 		var temp = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
-		
-		this.Value = double.Parse( temp );
+
+		this.Value = int.Parse( temp );
 	}
 
 	public void WriteToBuffer( BinaryWriter buffer )
 	{
-		var stringVal = this.Value.ToString( STRING_FORMAT, CultureInfo.InvariantCulture );
-		
+		var stringVal            = this.Value.ToString();
 		var remainingFieldLength = FieldLength;
 
 		if( this.Value >= 0 )
@@ -64,7 +57,7 @@ public class EdfDoubleField : IEdfHeaderField
 
 	public override string ToString()
 	{
-		return Value.ToString( CultureInfo.InvariantCulture );
+		return Value.ToString();
 	}
 
 	public override int GetHashCode()
@@ -73,7 +66,7 @@ public class EdfDoubleField : IEdfHeaderField
 		return Value.GetHashCode();
 	}
 
-	public static implicit operator double( EdfDoubleField field )
+	public static implicit operator int( EdfAsciiInteger field )
 	{
 		return field.Value;
 	}

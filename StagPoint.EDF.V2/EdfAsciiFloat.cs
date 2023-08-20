@@ -1,23 +1,32 @@
-﻿namespace StagPoint.EDF.V2;
+﻿using System.Globalization;
 
-public class EdfLongIntegerField : IEdfHeaderField
+namespace StagPoint.EDF.V2;
+
+public class EdfAsciiFloat : IEdfHeaderField
 {
 	#region Public properties
 
 	public int FieldLength { get; private set; }
 
-	public long Value { get; set; }
+	public double Value { get; set; }
 
+	#endregion
+	
+	#region Private fields
+	
+	// NOTE: The following only keeps 8 digits of precision. If this is insufficient, this is where you'd change it ;)
+	private const string STRING_FORMAT = "0.########"; 
+	
 	#endregion
 
 	#region Constructors
 
-	public EdfLongIntegerField( int fieldLength )
+	public EdfAsciiFloat( int fieldLength )
 	{
 		this.FieldLength = fieldLength;
 	}
 
-	public EdfLongIntegerField( int fieldLength, long value ) 
+	public EdfAsciiFloat( int fieldLength, double value ) 
 		: this( fieldLength )
 	{
 		this.Value = value;
@@ -31,12 +40,13 @@ public class EdfLongIntegerField : IEdfHeaderField
 	{
 		var temp = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
 		
-		this.Value = long.Parse( temp );
+		this.Value = double.Parse( temp );
 	}
 
 	public void WriteToBuffer( BinaryWriter buffer )
 	{
-		var stringVal            = this.Value.ToString();
+		var stringVal = this.Value.ToString( STRING_FORMAT, CultureInfo.InvariantCulture );
+		
 		var remainingFieldLength = FieldLength;
 
 		if( this.Value >= 0 )
@@ -54,7 +64,7 @@ public class EdfLongIntegerField : IEdfHeaderField
 
 	public override string ToString()
 	{
-		return Value.ToString();
+		return Value.ToString( CultureInfo.InvariantCulture );
 	}
 
 	public override int GetHashCode()
@@ -63,7 +73,7 @@ public class EdfLongIntegerField : IEdfHeaderField
 		return Value.GetHashCode();
 	}
 
-	public static implicit operator long( EdfLongIntegerField field )
+	public static implicit operator double( EdfAsciiFloat field )
 	{
 		return field.Value;
 	}
