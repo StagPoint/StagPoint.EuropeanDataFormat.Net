@@ -22,8 +22,8 @@ namespace StagPoint.EDF.Net
 		public List<EdfAsciiString>  Labels               { get; set; } = new List<EdfAsciiString>();
 		public List<EdfAsciiString>  TransducerType       { get; set; } = new List<EdfAsciiString>();
 		public List<EdfAsciiString>  PhysicalDimension    { get; set; } = new List<EdfAsciiString>();
-		public List<EdfAsciiInteger> PhysicalMinimum      { get; set; } = new List<EdfAsciiInteger>();
-		public List<EdfAsciiInteger> PhysicalMaximum      { get; set; } = new List<EdfAsciiInteger>();
+		public List<EdfAsciiFloat>   PhysicalMinimum      { get; set; } = new List<EdfAsciiFloat>();
+		public List<EdfAsciiFloat>   PhysicalMaximum      { get; set; } = new List<EdfAsciiFloat>();
 		public List<EdfAsciiInteger> DigitalMinimum       { get; set; } = new List<EdfAsciiInteger>();
 		public List<EdfAsciiInteger> DigitalMaximum       { get; set; } = new List<EdfAsciiInteger>();
 		public List<EdfAsciiString>  Prefiltering         { get; set; } = new List<EdfAsciiString>();
@@ -79,8 +79,8 @@ namespace StagPoint.EDF.Net
 			readListFromBuffer( buffer, Labels,               NumberOfSignals, ()=> new EdfAsciiString( 16 ) );
 			readListFromBuffer( buffer, TransducerType,       NumberOfSignals, ()=> new EdfAsciiString( 80 )  );
 			readListFromBuffer( buffer, PhysicalDimension,    NumberOfSignals, ()=> new EdfAsciiString( 8 )  );
-			readListFromBuffer( buffer, PhysicalMinimum,      NumberOfSignals, ()=> new EdfAsciiInteger( 8 )  );
-			readListFromBuffer( buffer, PhysicalMaximum,      NumberOfSignals, ()=> new EdfAsciiInteger( 8 )  );
+			readListFromBuffer( buffer, PhysicalMinimum,      NumberOfSignals, ()=> new EdfAsciiFloat( 8 )  );
+			readListFromBuffer( buffer, PhysicalMaximum,      NumberOfSignals, ()=> new EdfAsciiFloat( 8 )  );
 			readListFromBuffer( buffer, DigitalMinimum,       NumberOfSignals, ()=> new EdfAsciiInteger( 8 ) );
 			readListFromBuffer( buffer, DigitalMaximum,       NumberOfSignals, ()=> new EdfAsciiInteger( 8 ) );
 			readListFromBuffer( buffer, Prefiltering,         NumberOfSignals, ()=> new EdfAsciiString( 80 )  );

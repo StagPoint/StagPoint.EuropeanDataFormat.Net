@@ -20,4 +20,41 @@
       <ProjectReference Include="..\StagPoint.EDF.V2\StagPoint.EDF.V2.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Test Files\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Test Files\annotations.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals2.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals2.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals2_annotations.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\Female57yrs 07-MAR-2009 00h00m00s APSG.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\signals_only.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\signals_only2.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

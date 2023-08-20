@@ -1,0 +1,3 @@
+Date, Time, Recording onset, Duration, Annotation, Linked channel
+04-Apr-2011, 12:57:02, 0, 0, Recording starts, 
+04-Apr-2011, 13:07:02, 600, 0, Recording ends, 
