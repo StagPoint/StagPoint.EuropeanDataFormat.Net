@@ -3,7 +3,7 @@
 <img src="https://img.shields.io/github/issues/StagPoint/StagPoint.EDF.V2"  alt="Issues"/>
 </a>
 <a href="https://github.com/StagPoint/StagPoint.EDF.V2/blob/master/LICENSE">
-<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2"  alt="License"/>
+<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2" alt="License"/>
 </a>
 [![Nuget](https://img.shields.io/nuget/v/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
 [![Nuget](https://img.shields.io/nuget/dt/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
