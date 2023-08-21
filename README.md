@@ -8,7 +8,7 @@
 [![Nuget](https://img.shields.io/nuget/v/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
 [![Nuget](https://img.shields.io/nuget/dt/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
 
-# StagPoint.EDF.V2~~~~
+# StagPoint.EDF.V2
 #### .NET library for reading and writing European Data File (EDF) format files
 
 ---
