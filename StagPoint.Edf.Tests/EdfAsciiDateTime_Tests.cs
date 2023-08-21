@@ -15,11 +15,11 @@ public class EdfAsciiDateTime_Tests
 		var testDate = Trim( DateTime.Now, TimeSpan.TicksPerSecond );
 
 		var dateField = new EdfAsciiDateTime( testDate );
-		dateField.WriteToBuffer( writer );
+		dateField.WriteTo( writer );
 		Assert.AreEqual( dateField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 
 		buffer.Position = 0;
-		dateField.ReadFromBuffer( new BinaryReader( buffer ) );
+		dateField.ReadFrom( new BinaryReader( buffer ) );
 		
 		Assert.AreEqual( testDate, dateField, "Round-tripped date does not match original value" );
 	}

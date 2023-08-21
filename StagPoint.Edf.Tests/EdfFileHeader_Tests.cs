@@ -20,7 +20,7 @@ public class EdfFileHeader_Tests
 		using var reader = new BinaryReader( file );
 		var       header = new EdfFileHeader();
 		
-		header.ReadFromBuffer( reader );
+		header.ReadFrom( reader );
 
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
@@ -55,7 +55,7 @@ public class EdfFileHeader_Tests
 		using var reader = new BinaryReader( file );
 		var       header = new EdfFileHeader();
 		
-		header.ReadFromBuffer( reader );
+		header.ReadFrom( reader );
 
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
@@ -124,15 +124,30 @@ public class EdfFileHeader_Tests
 		var currentFolder = Path.Combine( Environment.CurrentDirectory, "Test Files" );
 		Assert.IsTrue( Directory.Exists( currentFolder ) );
 
-		var testFiles = Directory.GetFiles( currentFolder, "*.edf" );
-		Assert.IsTrue( testFiles != null && testFiles.Length > 0, "No test files found" );
+		var testFiles = Directory.GetFiles( currentFolder, "*.edf", SearchOption.AllDirectories );
+		Assert.IsTrue( testFiles is { Length: > 0 }, "No test files found" );
 
 		foreach( var filename in testFiles )
 		{
 			try
 			{
-				var sourceHeader = readHeaderFromFile( filename );
-			
+				EdfFileHeader sourceHeader = default!;
+
+				try
+				{
+					sourceHeader = readHeaderFromFile( filename );
+				}
+				catch( FormatException e )
+				{
+					// For files with an invalid date (some included intentionally for testing purposes), 
+					// just skip the round-trip test. 
+					if( e.ToString().Contains( "DateTime.ParseExact" ) )
+					{
+						continue;
+					}
+				}
+
+				Debug.Assert( sourceHeader != null, nameof( sourceHeader ) + " != null" );
 				writeHeaderToFile( sourceHeader, tempFileName );
 
 				var compareHeader = readHeaderFromFile( tempFileName );
@@ -164,10 +179,91 @@ public class EdfFileHeader_Tests
 			}
 		}
 	}
+
+	[TestMethod]
+	public void LoadHeaderWithInvalidStartDate()
+	{
+		// Some data files from existing medical databases contain invalid Start Date fields.  
+		
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "InvalidDateField.edf" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		using var file   = File.OpenRead( filename );
+		using var reader = new BinaryReader( file );
+		var       header = new EdfFileHeader();
+
+		try
+		{
+			header.ReadFrom( reader );
+
+			// Expected a FormatException
+			Assert.Fail( "Expected a FormatException caused by attempting to parse an invalid DateTime" );
+		}
+		catch( FormatException e )
+		{
+			Assert.IsTrue( e.TargetSite!.DeclaringType!.Name == nameof( DateTime ), "Expected a FormatException caused by attempting to parse an invalid DateTime" );
+		}
+		
+		// Setting EdfFileHeader.StartTime.UseAlternateDateFormat to TRUE uses a DateTime format that should allow reading the header.
+		header.StartTime.UseAlternateDateFormat = true;
+		
+        // Rewind the file stream and try parsing the header file again 
+        file.Position = 0;
+        header.ReadFrom( reader );
+
+		Assert.AreEqual( 11, header.NumberOfSignals );
+	}
+
+	[TestMethod]
+	public void TestSignalLerp()
+	{
+		var physMax = (double)short.MaxValue;
+		var physMin = (double)short.MinValue;
+		var digiMax = 255;
+		var digiMin = 0;
+
+		for( int i = 0; i < 10; i++ )
+		{
+			var value = Random.Shared.Next( digiMin, digiMax );
+
+			var invT              = ((float)value - digiMin) / (digiMax - digiMin);
+			var interpolatedValue = lerp( physMin, physMax, invT );
+
+			Debug.WriteLine( $"{value} -> {interpolatedValue}" );
+
+		}
+
+		physMax = 0;
+		physMin = 1024;
+		
+		for( int i = 0; i < 10; i++ )
+		{
+			var value = Random.Shared.Next( digiMin, digiMax );
+
+			var invT              = inverseLerp( digiMin, digiMax, value );
+			var interpolatedValue = lerp( physMin, physMax, invT );
+
+			Debug.WriteLine( $"{value} -> {interpolatedValue}" );
+
+		}
+
+		float inverseLerp( double a, double b, double value )
+		{
+			return (float)((value - a) / (b - a));
+		}
+
+		double lerp( double a, double b, float t )
+		{
+			return (1.0 - t) * a + b * t;
+		}
+	}
 	
 	#region Utility functions
 
-	private bool listsAreEqual<T>( List<T> source, List<T> compare ) where T : class, IEdfAsciiField
+	private bool listsAreEqual<T>( List<T> source, List<T> compare ) where T : EdfAsciiField
 	{
 		Assert.AreEqual( source.Count, compare.Count );
 
@@ -181,13 +277,10 @@ public class EdfFileHeader_Tests
 
 	private static void writeHeaderToFile( EdfFileHeader header, string filename )
 	{
-		using( var outputFile = File.Create( filename ) )
-		{
-			using( var outputWriter = new BinaryWriter( outputFile ) )
-			{
-				header.WriteToBuffer( outputWriter );
-			}
-		}
+		using var outputFile   = File.Create( filename );
+		using var outputWriter = new BinaryWriter( outputFile );
+		
+		header.WriteTo( outputWriter );
 	}
 
 	private static EdfFileHeader readHeaderFromFile( string filename )

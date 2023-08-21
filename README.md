@@ -40,18 +40,18 @@ The first 256 bytes of the header record specify the version number of this form
 
 ### Header Record - Fixed-sized portion
 
-| Size | Name                           | Format         | Description                                                                                                                                      |
-|------|--------------------------------|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8    | Version                        | ASCII Integer  | Version of this data format (always 0)                                                                                                           |
-| 80   | Local Patient Identification   | ASCII String * | Either a unique identifier for the patient (in EDF), or a group of subfields containing more detailed patient information (EDF+)                 |
-| 80   | Local Recording Identification | ASCII String * | Either a unique identifier for this recording (in EDF), or a group of subfields containing more detailed information about the recording (EDF+)  |
-| 8    | Start Date of Recording        | ASCII Date     | The start date (in dd.mm.yy format) for when this recording was created                                                                          |
-| 8    | Start Time of Recording        | ASCII Time     | The time (in hh.mm.ss format) when this recording was started                                                                                    |
-| 8    | Header record size             | ASCII Integer  | The size (in bytes) of this header record                                                                                                        |
-| 44   | Reserved                       | ASCII String   | Reserved for use in future versions                                                                                                              |
-| 8    | Number of Data Records         | ASCII Integer  | The numbe of data records stored in the file                                                                                                     |
-| 8    | Duration of Data Records       | ASCII Float    | The amount of time (in seconds) represented by each Data Record                                                                                  |
-| 4    | Number of Signals              | ASCII Integer  | The number of signals whose data is stored in each Data Record                                                                                   |
+| Size | Name                           | Format         | Description                                                                                                                                     |
+|------|--------------------------------|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8    | Version                        | ASCII Integer  | Version of this data format (always 0)                                                                                                          |
+| 80   | Local Patient Identification   | ASCII String * | Either a unique identifier for the patient (in EDF), or a group of subfields containing more detailed patient information (EDF+)                |
+| 80   | Local Recording Identification | ASCII String * | Either a unique identifier for this recording (in EDF), or a group of subfields containing more detailed information about the recording (EDF+) |
+| 8    | Start Date of Recording        | ASCII Date     | The start date (in dd.mm.yy format) for when this recording was created                                                                         |
+| 8    | Start Time of Recording        | ASCII Time     | The time (in hh.mm.ss format) when this recording was started                                                                                   |
+| 8    | Header record size             | ASCII Integer  | The size (in bytes) of this header record                                                                                                       |
+| 44   | Reserved                       | ASCII String   | Reserved for use in future versions                                                                                                             |
+| 8    | Number of Data Records         | ASCII Integer  | The number of data records stored in the file                                                                                                   |
+| 8    | Duration of Data Records       | ASCII Float    | The amount of time (in seconds) represented by each Data Record                                                                                 |
+| 4    | Number of Signals              | ASCII Integer  | The number of signals whose data is stored in each Data Record                                                                                  |
 
 ### Header Record - Signal Information
 Immediately following the fixed-sized portion of the header record will be a number of arrays describing the characteristics of each stored signal.

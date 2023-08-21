@@ -43,7 +43,7 @@ namespace StagPoint.EDF.Net
 		{
 			using( var reader = new BinaryReader( source, Encoding.Default, true ) )
 			{
-				ReadFromBuffer( reader );
+				ReadFrom( reader );
 			}
 		}
 
@@ -51,20 +51,20 @@ namespace StagPoint.EDF.Net
 		
 		#region Public Read/Write functions 
 
-		public void WriteToBuffer( BinaryWriter buffer )
+		public void WriteTo( BinaryWriter buffer )
 		{
 			HeaderRecordSize.Value = calculateHeaderRecordSize();
 
 			// Write the fixed-size portion of the header
-			Version.WriteToBuffer( buffer );
-			PatientInfo.WriteToBuffer( buffer );
-			RecordingInfo.WriteToBuffer( buffer );
-			StartTime.WriteToBuffer( buffer );
-			HeaderRecordSize.WriteToBuffer( buffer );
-			Reserved.WriteToBuffer( buffer );
-			NumberOfDataRecords.WriteToBuffer( buffer );
-			DurationOfDataRecord.WriteToBuffer( buffer );
-			NumberOfSignals.WriteToBuffer( buffer );
+			Version.WriteTo( buffer );
+			PatientInfo.WriteTo( buffer );
+			RecordingInfo.WriteTo( buffer );
+			StartTime.WriteTo( buffer );
+			HeaderRecordSize.WriteTo( buffer );
+			Reserved.WriteTo( buffer );
+			NumberOfDataRecords.WriteTo( buffer );
+			DurationOfDataRecord.WriteTo( buffer );
+			NumberOfSignals.WriteTo( buffer );
 
             // Write the signal information 
             writeListToBuffer( buffer, Labels );
@@ -79,18 +79,18 @@ namespace StagPoint.EDF.Net
             writeListToBuffer( buffer, SignalReserved );
 		}
 
-		public void ReadFromBuffer( BinaryReader buffer )
+		public void ReadFrom( BinaryReader buffer )
 		{
 			// Read the fixed-size portion of the header
-			Version.ReadFromBuffer( buffer );
-			PatientInfo.ReadFromBuffer( buffer );
-			RecordingInfo.ReadFromBuffer( buffer );
-			StartTime.ReadFromBuffer( buffer );
-			HeaderRecordSize.ReadFromBuffer( buffer );
-			Reserved.ReadFromBuffer( buffer );
-			NumberOfDataRecords.ReadFromBuffer( buffer );
-			DurationOfDataRecord.ReadFromBuffer( buffer );
-			NumberOfSignals.ReadFromBuffer( buffer );
+			Version.ReadFrom( buffer );
+			PatientInfo.ReadFrom( buffer );
+			RecordingInfo.ReadFrom( buffer );
+			StartTime.ReadFrom( buffer );
+			HeaderRecordSize.ReadFrom( buffer );
+			Reserved.ReadFrom( buffer );
+			NumberOfDataRecords.ReadFrom( buffer );
+			DurationOfDataRecord.ReadFrom( buffer );
+			NumberOfSignals.ReadFrom( buffer );
 
 			// Read the signal information
 			readListFromBuffer( buffer, Labels,               NumberOfSignals, ()=> new EdfAsciiString( 16 ) );
@@ -129,24 +129,24 @@ namespace StagPoint.EDF.Net
 
 		#region Private functions
 
-		private void readListFromBuffer<T>( BinaryReader buffer, List<T> list, int count, Func<T> createItem ) where T : IEdfAsciiField
+		private void readListFromBuffer<T>( BinaryReader buffer, List<T> list, int count, Func<T> createItem ) where T : EdfAsciiField
 		{
 			list.Clear();
 			
 			for( int i = 0; i < count; i++ )
 			{
 				var item = createItem();
-				item.ReadFromBuffer( buffer );
+				item.ReadFrom( buffer );
 				
 				list.Add( item );
 			}
 		}
 
-		private static void writeListToBuffer( BinaryWriter buffer, IEnumerable<IEdfAsciiField> values )
+		private static void writeListToBuffer( BinaryWriter buffer, IEnumerable<EdfAsciiField> values )
 		{
 			foreach( var value in values )
 			{
-				value.WriteToBuffer( buffer );
+				value.WriteTo( buffer );
 			}
 		}
 		

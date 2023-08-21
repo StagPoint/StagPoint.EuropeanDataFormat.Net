@@ -7,24 +7,30 @@ namespace StagPoint.EDF.Net
 	/// <summary>
 	/// Stores a fixed-length ASCII string representing a whole number. For consistency
 	/// </summary>
-	public class EdfAsciiDateTime : IEdfAsciiField
+	public class EdfAsciiDateTime : EdfAsciiField
 	{
 		#region Public properties
 
-		public int FieldLength { get => 16; }
-
 		public DateTime Value { get; set; }
+
+		/// <summary>
+		/// You may encounter legacy EDF files which contain invalid Start Date values ("mm.dd.yy" instead of "dd.mm.yy"),
+		/// such as those in the "sleep-heart-health-study-psg-database-1.0.0" dataset. Since it may still be necessary
+		/// to read those files, you can set <see cref="UseAlternateDateFormat"/> to TRUE when necessary.
+		/// You should otherwise have no other need to change this value. 
+		/// </summary>
+		public bool UseAlternateDateFormat { get; set; } = false;
 
 		#endregion
 
 		#region Constructors
 
-		public EdfAsciiDateTime()
+		public EdfAsciiDateTime() : base( 16 )
 		{
 			this.Value = DateTime.Today;
 		}
 
-		public EdfAsciiDateTime( DateTime value )
+		public EdfAsciiDateTime( DateTime value ) : base( 16 )
 		{
 			this.Value = value;
 		}
@@ -33,16 +39,19 @@ namespace StagPoint.EDF.Net
 
 		#region IEdfAsciiValue interface implementation
 
-		public void ReadFromBuffer( BinaryReader buffer )
+		public override void ReadFrom( BinaryReader buffer )
 		{
 			// Dates are stored as dd.MM.yy and times as HH.mm.ss
 			var dateString = BufferHelper.ReadFromBuffer( buffer, 8 );
 			var timeString = BufferHelper.ReadFromBuffer( buffer, 8 );
 
-			this.Value = DateTime.ParseExact( $"{dateString} {timeString}", "dd.MM.yy HH.mm.ss", CultureInfo.InvariantCulture );
+			this.Value = DateTime.ParseExact( 
+				$"{dateString} {timeString}", 
+				UseAlternateDateFormat ? "MM.dd.yy HH.mm.ss" : "dd.MM.yy HH.mm.ss", 
+				CultureInfo.InvariantCulture );
 		}
 
-		public void WriteToBuffer( BinaryWriter buffer )
+		public override void WriteTo( BinaryWriter buffer )
 		{
 			BufferHelper.WriteToBuffer( buffer, Value.ToString( "dd.MM.yy" ), 8 );
 			BufferHelper.WriteToBuffer( buffer, Value.ToString( "HH.mm.ss" ), 8 );

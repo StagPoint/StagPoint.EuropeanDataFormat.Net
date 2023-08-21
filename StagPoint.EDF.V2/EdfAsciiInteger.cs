@@ -6,11 +6,9 @@ namespace StagPoint.EDF.Net
 	/// <summary>
 	/// Stores a fixed-length ASCII string representing a whole number. For consistency
 	/// </summary>
-	public class EdfAsciiInteger : IEdfAsciiField
+	public class EdfAsciiInteger : EdfAsciiField
 	{
 		#region Public properties
-
-		public int FieldLength { get; private set; }
 
 		public int Value { get; set; }
 
@@ -20,9 +18,9 @@ namespace StagPoint.EDF.Net
 
 		#region Constructors
 
-		public EdfAsciiInteger( int fieldLength, bool requireSignPrefix = false )
+		public EdfAsciiInteger( int fieldLength, bool requireSignPrefix = false ) 
+			: base( fieldLength )
 		{
-			this.FieldLength       = fieldLength;
 			this.RequireSignPrefix = requireSignPrefix;
 		}
 
@@ -36,14 +34,14 @@ namespace StagPoint.EDF.Net
 
 		#region IEdfAsciiValue interface implementation
 
-		public void ReadFromBuffer( BinaryReader buffer )
+		public override void ReadFrom( BinaryReader buffer )
 		{
 			var temp = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
 
 			this.Value = int.Parse( temp );
 		}
 
-		public void WriteToBuffer( BinaryWriter buffer )
+		public override void WriteTo( BinaryWriter buffer )
 		{
 			var stringVal            = this.Value.ToString();
 			var remainingFieldLength = FieldLength;

@@ -14,21 +14,21 @@ public class EdfAsciiString_Tests
 		// Test empty string first
 		buffer.Position = 0;
 		var stringField = new EdfAsciiString( 20 );
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		
 		// Test shorter string
 		buffer.Position   = 0;
 		stringField       = new EdfAsciiString( 20 );
 		stringField.Value = "Test Value";
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		
 		// Test much longer string
 		buffer.Position   = 0;
 		stringField       = new EdfAsciiString( 20 );
 		stringField.Value = "Now is the time for all good men to come to the aid of their country.";
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		
 		// Expect an ArgumentNullException when assigning null to an EdfAsciiString
@@ -52,24 +52,24 @@ public class EdfAsciiString_Tests
 		// Test empty string first
 		buffer.Position = 0;
 		var stringField = new EdfAsciiString( 20 );
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		buffer.Position = 0;
-		stringField.ReadFromBuffer( reader );
+		stringField.ReadFrom( reader );
 		Assert.AreEqual( string.Empty, stringField.Value );
 		
 		// Test shorter string
 		buffer.Position   = 0;
 		stringField       = new EdfAsciiString( 20 );
 		stringField.Value = "Test Value";
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		
 		// Test much longer string
 		buffer.Position   = 0;
 		stringField       = new EdfAsciiString( 20 );
 		stringField.Value = "Now is the time for all good men to come to the aid of their country.";
-		stringField.WriteToBuffer( writer );
+		stringField.WriteTo( writer );
 		Assert.AreEqual( stringField.FieldLength, buffer.Position, "The number of bytes written doesn't match the field length" );
 		
 	}

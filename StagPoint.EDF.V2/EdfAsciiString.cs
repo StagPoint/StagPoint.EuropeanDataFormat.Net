@@ -10,11 +10,9 @@ namespace StagPoint.EDF.Net
 	/// the fixed-length requirement. In the Header file, these string must only contain the ASCII characters
 	/// 32..126 (inclusive).
 	/// </summary>
-	public class EdfAsciiString : IEdfAsciiField
+	public class EdfAsciiString : EdfAsciiField
 	{
 		#region Public properties
-
-		public int FieldLength { get; private set; }
 
 		public string Value
 		{
@@ -37,32 +35,29 @@ namespace StagPoint.EDF.Net
 			}
 		}
 
-	#endregion
+		#endregion
 
-	#region Constructors
+		#region Constructors
 
-		public EdfAsciiString( int fieldLength )
-		{
-			this.FieldLength = fieldLength;
-		}
+		public EdfAsciiString( int fieldLength ) : base( fieldLength ) { }
 
 		public EdfAsciiString( int fieldLength, string value )
-			: this( fieldLength )
+			: base( fieldLength )
 		{
 			this.Value = value;
 		}
 
-	#endregion
+		#endregion
 
-	#region Private fields
+		#region Private fields
 
 		private string _value = string.Empty;
 
-	#endregion
+		#endregion
 
-	#region IEdfAsciiValue interface implementation
+		#region IEdfAsciiValue interface implementation
 
-		public void WriteToBuffer( BinaryWriter buffer )
+		public override void WriteTo( BinaryWriter buffer )
 		{
 			if( _value == null )
 			{
@@ -72,14 +67,14 @@ namespace StagPoint.EDF.Net
 			BufferHelper.WriteToBuffer( buffer, _value, FieldLength );
 		}
 
-		public void ReadFromBuffer( BinaryReader buffer )
+		public override void ReadFrom( BinaryReader buffer )
 		{
 			_value = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
 		}
 
-	#endregion
+		#endregion
 
-	#region Base class overrides and implicit type conversion
+		#region Base class overrides and implicit type conversion
 
 		public override string ToString()
 		{
@@ -91,6 +86,6 @@ namespace StagPoint.EDF.Net
 			return field._value;
 		}
 
-	#endregion
+		#endregion
 	}
 }
