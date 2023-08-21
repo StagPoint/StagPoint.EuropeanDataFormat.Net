@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace StagPoint.EDF.Net
 {
@@ -30,6 +31,20 @@ namespace StagPoint.EDF.Net
 		public List<EdfAsciiInteger> SamplesPerDataRecord { get; set; } = new List<EdfAsciiInteger>();
 		public List<EdfAsciiString>  SignalReserved       { get; set; } = new List<EdfAsciiString>();
 		
+		#endregion 
+		
+		#region Constructors
+
+		public EdfFileHeader() { }
+
+		public EdfFileHeader( Stream source )
+		{
+			using( var reader = new BinaryReader( source, Encoding.Default, true ) )
+			{
+				ReadFromBuffer( reader );
+			}
+		}
+
 		#endregion 
 		
 		#region Public Read/Write functions 
