@@ -30,6 +30,8 @@ namespace StagPoint.EDF.Net
 		public List<EdfAsciiString>  Prefiltering         { get; set; } = new List<EdfAsciiString>();
 		public List<EdfAsciiInteger> SamplesPerDataRecord { get; set; } = new List<EdfAsciiInteger>();
 		public List<EdfAsciiString>  SignalReserved       { get; set; } = new List<EdfAsciiString>();
+
+		public List<EdfSignalHeader> SignalHeaders { get; set; } = new List<EdfSignalHeader>();
 		
 		#endregion 
 		
@@ -101,6 +103,27 @@ namespace StagPoint.EDF.Net
 			readListFromBuffer( buffer, Prefiltering,         NumberOfSignals, ()=> new EdfAsciiString( 80 )  );
 			readListFromBuffer( buffer, SamplesPerDataRecord, NumberOfSignals, ()=> new EdfAsciiInteger( 8 )  );
 			readListFromBuffer( buffer, SignalReserved,       NumberOfSignals, () => new EdfAsciiString( 32 ) );
+
+			SignalHeaders.Clear();
+
+			for( int i = 0; i < NumberOfSignals; i++ )
+			{
+				var signal = new EdfSignalHeader
+				{
+					Label                    = Labels[ i ],
+					TransducerType           = TransducerType[ i ],
+					PhysicalDimension        = PhysicalDimension[ i ],
+					PhysicalMinimum          = PhysicalMinimum[ i ],
+					PhysicalMaximum          = PhysicalMaximum[ i ],
+					DigitalMinimum           = DigitalMinimum[ i ],
+					DigitalMaximum           = DigitalMaximum[ i ],
+					Prefiltering             = Prefiltering[ i ],
+					NumberOfSamplesPerRecord = SamplesPerDataRecord[ i ],
+					Reserved                 = SignalReserved[ i ]
+				};
+				
+				SignalHeaders.Add( signal );
+			}
 		}
 		#endregion
 
