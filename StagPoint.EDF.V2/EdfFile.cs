@@ -6,12 +6,31 @@ using System.Text;
 
 namespace StagPoint.EDF.Net
 {
+	/// <summary>
+	/// Represents a European Data Format file, and is used to read and write EDF files.
+	/// </summary>
 	public class EdfFile
 	{
-		public EdfFileHeader Header { get; set; } = new EdfFileHeader();
+		#region Public properties 
+		
+		/// <summary>
+		/// Returns the EdfFileHeader instance containing all of the information stored in the EDF Header of this file.
+		/// </summary>
+		public EdfFileHeader Header { get; private set; } = new EdfFileHeader();
 
-		public List<EdfSignalBase> Signals { get; set; } = new List<EdfSignalBase>();
+		/// <summary>
+		/// Returns the list of all Signals (both Standard signals and Annotation signals) stored in this file.
+		/// </summary>
+		public List<EdfSignalBase> Signals { get; private set; } = new List<EdfSignalBase>();
+		
+		#endregion
 
+		#region Public functions
+
+		/// <summary>
+		/// Reads from the file indicated
+		/// </summary>
+		/// <param name="filename">The full path to the file to be read</param>
 		public void ReadFrom( string filename )
 		{
 			using( var file = File.OpenRead( filename ) )
@@ -20,6 +39,10 @@ namespace StagPoint.EDF.Net
 			}
 		}
 
+		/// <summary>
+		/// Reads the EDF File information from the provided stream (most often a File Stream)
+		/// </summary>
+		/// <param name="file">The stream which contains the EDF file information to be read</param>
 		public void ReadFrom( Stream file )
 		{
 			using( var reader = new BinaryReader( file, Encoding.ASCII ) )
@@ -33,6 +56,10 @@ namespace StagPoint.EDF.Net
 				}
 			}
 		}
+		
+		#endregion
+
+		#region Private functions 
 		
 		private void readDataRecord( BinaryReader reader, int index )
 		{
@@ -91,6 +118,10 @@ namespace StagPoint.EDF.Net
 				}
 				
 				// If an annotation contains a description, it will be preceded by 0x15
+				// Note that there may be multiple consecutive descriptions for the same Onset and Duration, 
+				// and each should be added as a separate Annotation.
+				// See the "Time-stamped Annotations Lists (TALs) in an 'EDF Annotations' Signal" section of the EDF+ spec
+				//		https://www.edfplus.info/specs/edfplus.html#tal
 				while( buffer[ position ] == '\x14' )
 				{
 					++position;
@@ -153,6 +184,8 @@ namespace StagPoint.EDF.Net
 			{
 				var sample = reader.ReadInt16();
 				
+				// TODO: Implement support for logarithmic transformation (https://www.edfplus.info/specs/edffloat.html)
+				
 				var t     = MathUtil.InverseLerp( signal.DigitalMinimum, signal.DigitalMaximum, sample );
 				var value = MathUtil.Lerp( signal.PhysicalMinimum, signal.PhysicalMaximum, t );
 				
@@ -176,5 +209,7 @@ namespace StagPoint.EDF.Net
 				}
 			}
 		}
+		
+		#endregion 
 	}
 }

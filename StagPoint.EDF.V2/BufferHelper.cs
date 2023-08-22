@@ -4,7 +4,7 @@ using System.Text;
 
 namespace StagPoint.EDF.Net
 {
-	public static class BufferHelper
+	internal static class BufferHelper
 	{
 		[MethodImpl( MethodImplOptions.AggressiveInlining )]
 		public static void WriteToBuffer( BinaryWriter buffer, string value, int fieldLength )

@@ -1,6 +1,6 @@
 ﻿namespace StagPoint.EDF.Net
 {
-	public class EdfSignalHeader
+	internal class EdfSignalHeader
 	{
 		#region Stored properties 
 		

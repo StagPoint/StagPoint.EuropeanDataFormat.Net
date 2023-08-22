@@ -12,7 +12,7 @@ namespace StagPoint.EDF.Net
 		
 		#region Constructor 
 		
-		public EdfStandardSignal( EdfSignalHeader header ) : base( header )
+		internal EdfStandardSignal( EdfSignalHeader header ) : base( header )
 		{
 		}
 		

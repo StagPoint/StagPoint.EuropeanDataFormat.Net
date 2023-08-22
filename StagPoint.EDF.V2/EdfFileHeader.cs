@@ -31,7 +31,7 @@ namespace StagPoint.EDF.Net
 		public List<EdfAsciiInteger> SamplesPerDataRecord { get; set; } = new List<EdfAsciiInteger>();
 		public List<EdfAsciiString>  SignalReserved       { get; set; } = new List<EdfAsciiString>();
 
-		public List<EdfSignalHeader> SignalHeaders { get; set; } = new List<EdfSignalHeader>();
+		internal List<EdfSignalHeader> SignalHeaders { get; set; } = new List<EdfSignalHeader>();
 		
 		#endregion 
 		

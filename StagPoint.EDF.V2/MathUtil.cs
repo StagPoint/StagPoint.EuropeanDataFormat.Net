@@ -2,7 +2,10 @@
 
 namespace StagPoint.EDF.Net
 {
-	public static class MathUtil
+	/// <summary>
+	/// Provides a few commonly-used mathematical operations
+	/// </summary>
+	internal static class MathUtil
 	{
 		/// <summary>
 		/// Linearly interpolates between a and b by t.

@@ -1,4 +1,6 @@
 ﻿// ReSharper disable IdentifierTypo
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace StagPoint.EDF.Net
 {
 	public static class StandardTexts
@@ -15,7 +17,7 @@ namespace StagPoint.EDF.Net
 		
 		/// <summary>
 		/// Standard labels for common signal types. Not a complete list.
-		/// <seealso cref="https://www.edfplus.info/specs/edftexts.html#signals"/>
+		/// https://www.edfplus.info/specs/edftexts.html#signals"/>
 		/// </summary>
 		public static class SignalType
 		{
