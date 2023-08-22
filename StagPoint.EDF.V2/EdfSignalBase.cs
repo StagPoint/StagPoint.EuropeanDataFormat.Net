@@ -34,5 +34,14 @@
 		}
 		
 		#endregion 
+		
+		#region Base class overrides
+
+		public override string ToString()
+		{
+			return $"{Label.Value} ({TransducerType.Value})";
+		}
+
+		#endregion 
 	}
 }

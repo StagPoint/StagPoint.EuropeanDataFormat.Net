@@ -229,7 +229,7 @@ public class EdfFileHeader_Tests
 		{
 			var value = Random.Shared.Next( digiMin, digiMax );
 
-			var invT              = ((float)value - digiMin) / (digiMax - digiMin);
+			var invT              = inverseLerp( digiMin, digiMax, value );
 			var interpolatedValue = lerp( physMin, physMax, invT );
 
 			Debug.WriteLine( $"{value} -> {interpolatedValue}" );

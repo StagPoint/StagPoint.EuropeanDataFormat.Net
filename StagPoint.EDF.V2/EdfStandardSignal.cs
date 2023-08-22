@@ -8,8 +8,6 @@ namespace StagPoint.EDF.Net
 
 		public List<double> Samples { get; set; } = new List<double>();
 
-		public List<double> Timestamps { get; set; } = new List<double>();
-
 		#endregion
 		
 		#region Constructor 
