@@ -8,6 +8,7 @@
   - [Duration](#P-StagPoint-EDF-Net-EdfAnnotation-Duration 'StagPoint.EDF.Net.EdfAnnotation.Duration')
   - [IsTimeKeepingAnnotation](#P-StagPoint-EDF-Net-EdfAnnotation-IsTimeKeepingAnnotation 'StagPoint.EDF.Net.EdfAnnotation.IsTimeKeepingAnnotation')
   - [Onset](#P-StagPoint-EDF-Net-EdfAnnotation-Onset 'StagPoint.EDF.Net.EdfAnnotation.Onset')
+  - [GetSize()](#M-StagPoint-EDF-Net-EdfAnnotation-GetSize 'StagPoint.EDF.Net.EdfAnnotation.GetSize')
 - [EdfAnnotationSignal](#T-StagPoint-EDF-Net-EdfAnnotationSignal 'StagPoint.EDF.Net.EdfAnnotationSignal')
   - [#ctor(header)](#M-StagPoint-EDF-Net-EdfAnnotationSignal-#ctor-StagPoint-EDF-Net-EdfSignalHeader- 'StagPoint.EDF.Net.EdfAnnotationSignal.#ctor(StagPoint.EDF.Net.EdfSignalHeader)')
   - [Annotations](#P-StagPoint-EDF-Net-EdfAnnotationSignal-Annotations 'StagPoint.EDF.Net.EdfAnnotationSignal.Annotations')
@@ -68,6 +69,17 @@ indicating when each DataRecord begins relative to the start of the file.
 
 Specifies the number of seconds by which the onset of the annotated event follows ('+') or precedes ('-')
 the startdate/time of the file (the StartTime that is specified in the file header)
+
+<a name='M-StagPoint-EDF-Net-EdfAnnotation-GetSize'></a>
+### GetSize() `method`
+
+##### Summary
+
+Returns the number of bytes that would be needed to store this Annotation
+
+##### Parameters
+
+This method has no parameters.
 
 <a name='T-StagPoint-EDF-Net-EdfAnnotationSignal'></a>
 ## EdfAnnotationSignal `type`

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -73,7 +74,7 @@ namespace StagPoint.EDF.Net
 				Header.NumberOfDataRecords.Value = 0;
 				
 				// Write the header information 
-				this.Header.WriteTo( writer );
+				Header.WriteTo( writer );
 
 				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
 				var counters = new int[ Signals.Count ];
@@ -91,12 +92,12 @@ namespace StagPoint.EDF.Net
 
 						if( Signals[ i ] is EdfStandardSignal standardSignal )
 						{
-							counters[ i ]   += writeSignal( writer, standardSignal, counters[ i ] );
+							counters[ i ]   += writeStandardSignal( writer, standardSignal, counters[ i ] );
 							continueWriting |= counters[ i ] < standardSignal.Samples.Count;
 						}
 						else if( Signals[ i ] is EdfAnnotationSignal annotationSignal )
 						{
-							counters[ i ]   += writeSignal( writer, annotationSignal, counters[ i ] );
+							counters[ i ]   += writeAnnotationSignal( writer, annotationSignal, counters[ i ] );
 							continueWriting |= counters[ i ] < annotationSignal.Annotations.Count;
 						}
 					}
@@ -120,10 +121,9 @@ namespace StagPoint.EDF.Net
 
 		#region Private functions
 
-		private int writeSignal( BinaryWriter writer, EdfStandardSignal signal, int startIndex )
+		private int writeStandardSignal( BinaryWriter writer, EdfStandardSignal signal, int position )
 		{
 			int samplesWritten = 0;
-			int position       = startIndex;
 
 			// Write as many samples as possible, up to NumberOfSamplesPerRecord 
 			while( position < signal.Samples.Count && samplesWritten < signal.NumberOfSamplesPerRecord )
@@ -138,11 +138,12 @@ namespace StagPoint.EDF.Net
 				++samplesWritten;
 			}
 			
-			// Need to pad out the rest of any unused space 
+			// TODO: What is the correct thing to to when there are fewer samples available than allocated space? The spec seems strangely silent on this.
+			// When there are fewer samples than the space allocated, fill out the rest of the allocated space to keep things aligned
 			while( samplesWritten < signal.NumberOfSamplesPerRecord )
 			{
-				// Write a junk value that's easy to spot visually in a hex viewer, for debugging purposes 
-				writer.Write( (short)0x0ABC );
+				// Writing the DigitalMinimum value is probably the safest thing to do
+				writer.Write( (short)signal.DigitalMinimum.Value );
 
 				++samplesWritten;
 			}
@@ -150,8 +151,70 @@ namespace StagPoint.EDF.Net
 			return samplesWritten;
 		}
 
-		private int writeSignal( BinaryWriter writer, EdfAnnotationSignal signal, int startIndex )
+		private int writeAnnotationSignal( BinaryWriter writer, EdfAnnotationSignal signal, int position )
 		{
+			var bufferStartPosition = writer.BaseStream.Position;
+			int bytesWritten        = 0;
+
+			while( position < signal.Annotations.Count )
+			{
+				var annotation     = signal.Annotations[ position ];
+				var annotationSize = annotation.GetSize();
+
+				// An Annotation must not be split across DataRecord boundaries 
+				if( bytesWritten + annotationSize > signal.NumberOfSamplesPerRecord * 2 )
+				{
+					break;
+				}
+
+				// Write Onset. 
+				{
+					// Onset must be preceded by a '-' or '+' character
+					if( annotation.Onset >= 0 )
+					{
+						writer.Write( '+' );
+					}
+
+					var onsetAsString = annotation.Onset.ToString( CultureInfo.InvariantCulture );
+					writer.Write( Encoding.ASCII.GetBytes( onsetAsString ) );
+				}
+				
+				// Write Duration, if present
+				if( annotation.Duration > double.Epsilon )
+				{
+					// Write delimiter
+					writer.Write( (byte)0x15 );
+
+					var durationAsString = annotation.Duration.ToString( CultureInfo.InvariantCulture );
+					writer.Write( Encoding.ASCII.GetBytes( durationAsString ) );
+				}
+				
+				// Write delimiter
+				writer.Write( (byte)0x14 );
+
+				// Write Annotation, if present
+				if( !string.IsNullOrEmpty( annotation.Annotation ) )
+				{
+					writer.Write( Encoding.UTF8.GetBytes( annotation.Annotation ) );
+				}
+				
+				// Write terminator 
+				writer.Write( (byte)0x14 );
+				writer.Write( (byte)0x00 );
+				
+				// Keep track of the number of bytes written
+				bytesWritten = (int)(writer.BaseStream.Position - bufferStartPosition);
+
+				++position;
+			}
+
+			// Pad out the rest of the allocated space with null characters 
+			while( bytesWritten < signal.NumberOfSamplesPerRecord * 2 )
+			{
+				writer.Write( (byte)0x00 );
+				bytesWritten += 1;
+			}
+
 			return signal.NumberOfSamplesPerRecord;
 		}
 		
