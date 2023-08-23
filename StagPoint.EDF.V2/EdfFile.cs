@@ -49,7 +49,7 @@ namespace StagPoint.EDF.Net
 			using( var reader = new BinaryReader( file, Encoding.ASCII ) )
 			{
 				this.Header.ReadFrom( reader );
-				allocateSignals();
+				this.Header.AllocateSignals( this.Signals );
 
 				for( int i = 0; i < Header.NumberOfDataRecords; i++ )
 				{
@@ -58,6 +58,10 @@ namespace StagPoint.EDF.Net
 			}
 		}
 
+		/// <summary>
+		/// Saves the EDF file to the given filename
+		/// </summary>
+		/// <param name="filename">The fully-qualified path to the file you wish to save</param>
 		public void WriteTo( string filename )
 		{
 			using( var file = File.Create( filename ) )
@@ -66,12 +70,20 @@ namespace StagPoint.EDF.Net
 			}
 		}
 
+		/// <summary>
+		/// Saves the EDF file to the given Stream
+		/// </summary>
+		/// <param name="file">The stream (typically a FileStream, but may be any object derived from Stream)
+		/// to which you want to save the file information.</param>
 		public void WriteTo( Stream file )
 		{
 			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
 			{
 				// We don't know the number of DataRecords written yet. This value will be overwritten below.  
 				Header.NumberOfDataRecords.Value = 0;
+				
+				// Update the header fields that store Signal information 
+				Header.UpdateSignalFields( Signals );
 				
 				// Write the header information 
 				Header.WriteTo( writer );
@@ -88,8 +100,6 @@ namespace StagPoint.EDF.Net
 					
 					for( int i = 0; i < Signals.Count; i++ )
 					{
-						int signalSamplesWritten = 0;
-
 						if( Signals[ i ] is EdfStandardSignal standardSignal )
 						{
 							counters[ i ]   += writeStandardSignal( writer, standardSignal, counters[ i ] );
@@ -354,23 +364,6 @@ namespace StagPoint.EDF.Net
 				var value = MathUtil.Lerp( signal.PhysicalMinimum, signal.PhysicalMaximum, t );
 				
 				signal.Samples.Add( value );
-			}
-		}
-
-		private void allocateSignals()
-		{
-			Signals.Clear();
-
-			foreach( var header in Header.SignalHeaders )
-			{
-				if( header.Label.Value.Equals( StandardTexts.SignalType.EdfAnnotations ) )
-				{
-					Signals.Add( new EdfAnnotationSignal( header ) );
-				}
-				else
-				{
-					Signals.Add( new EdfStandardSignal( header ) );
-				}
 			}
 		}
 		

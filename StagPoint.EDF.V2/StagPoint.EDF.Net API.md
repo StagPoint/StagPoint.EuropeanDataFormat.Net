@@ -21,6 +21,28 @@
   - [Signals](#P-StagPoint-EDF-Net-EdfFile-Signals 'StagPoint.EDF.Net.EdfFile.Signals')
   - [ReadFrom(filename)](#M-StagPoint-EDF-Net-EdfFile-ReadFrom-System-String- 'StagPoint.EDF.Net.EdfFile.ReadFrom(System.String)')
   - [ReadFrom(file)](#M-StagPoint-EDF-Net-EdfFile-ReadFrom-System-IO-Stream- 'StagPoint.EDF.Net.EdfFile.ReadFrom(System.IO.Stream)')
+  - [WriteTo(filename)](#M-StagPoint-EDF-Net-EdfFile-WriteTo-System-String- 'StagPoint.EDF.Net.EdfFile.WriteTo(System.String)')
+  - [WriteTo(file)](#M-StagPoint-EDF-Net-EdfFile-WriteTo-System-IO-Stream- 'StagPoint.EDF.Net.EdfFile.WriteTo(System.IO.Stream)')
+- [EdfFileHeader](#T-StagPoint-EDF-Net-EdfFileHeader 'StagPoint.EDF.Net.EdfFileHeader')
+  - [DigitalMaximum](#P-StagPoint-EDF-Net-EdfFileHeader-DigitalMaximum 'StagPoint.EDF.Net.EdfFileHeader.DigitalMaximum')
+  - [DigitalMinimum](#P-StagPoint-EDF-Net-EdfFileHeader-DigitalMinimum 'StagPoint.EDF.Net.EdfFileHeader.DigitalMinimum')
+  - [DurationOfDataRecord](#P-StagPoint-EDF-Net-EdfFileHeader-DurationOfDataRecord 'StagPoint.EDF.Net.EdfFileHeader.DurationOfDataRecord')
+  - [HeaderRecordSize](#P-StagPoint-EDF-Net-EdfFileHeader-HeaderRecordSize 'StagPoint.EDF.Net.EdfFileHeader.HeaderRecordSize')
+  - [Labels](#P-StagPoint-EDF-Net-EdfFileHeader-Labels 'StagPoint.EDF.Net.EdfFileHeader.Labels')
+  - [NumberOfDataRecords](#P-StagPoint-EDF-Net-EdfFileHeader-NumberOfDataRecords 'StagPoint.EDF.Net.EdfFileHeader.NumberOfDataRecords')
+  - [NumberOfSignals](#P-StagPoint-EDF-Net-EdfFileHeader-NumberOfSignals 'StagPoint.EDF.Net.EdfFileHeader.NumberOfSignals')
+  - [PatientInfo](#P-StagPoint-EDF-Net-EdfFileHeader-PatientInfo 'StagPoint.EDF.Net.EdfFileHeader.PatientInfo')
+  - [PhysicalDimension](#P-StagPoint-EDF-Net-EdfFileHeader-PhysicalDimension 'StagPoint.EDF.Net.EdfFileHeader.PhysicalDimension')
+  - [PhysicalMaximum](#P-StagPoint-EDF-Net-EdfFileHeader-PhysicalMaximum 'StagPoint.EDF.Net.EdfFileHeader.PhysicalMaximum')
+  - [PhysicalMinimum](#P-StagPoint-EDF-Net-EdfFileHeader-PhysicalMinimum 'StagPoint.EDF.Net.EdfFileHeader.PhysicalMinimum')
+  - [Prefiltering](#P-StagPoint-EDF-Net-EdfFileHeader-Prefiltering 'StagPoint.EDF.Net.EdfFileHeader.Prefiltering')
+  - [RecordingInfo](#P-StagPoint-EDF-Net-EdfFileHeader-RecordingInfo 'StagPoint.EDF.Net.EdfFileHeader.RecordingInfo')
+  - [Reserved](#P-StagPoint-EDF-Net-EdfFileHeader-Reserved 'StagPoint.EDF.Net.EdfFileHeader.Reserved')
+  - [SamplesPerDataRecord](#P-StagPoint-EDF-Net-EdfFileHeader-SamplesPerDataRecord 'StagPoint.EDF.Net.EdfFileHeader.SamplesPerDataRecord')
+  - [SignalReserved](#P-StagPoint-EDF-Net-EdfFileHeader-SignalReserved 'StagPoint.EDF.Net.EdfFileHeader.SignalReserved')
+  - [StartTime](#P-StagPoint-EDF-Net-EdfFileHeader-StartTime 'StagPoint.EDF.Net.EdfFileHeader.StartTime')
+  - [TransducerType](#P-StagPoint-EDF-Net-EdfFileHeader-TransducerType 'StagPoint.EDF.Net.EdfFileHeader.TransducerType')
+  - [Version](#P-StagPoint-EDF-Net-EdfFileHeader-Version 'StagPoint.EDF.Net.EdfFileHeader.Version')
 - [FileType](#T-StagPoint-EDF-Net-StandardTexts-FileType 'StagPoint.EDF.Net.StandardTexts.FileType')
 - [MathUtil](#T-StagPoint-EDF-Net-MathUtil 'StagPoint.EDF.Net.MathUtil')
   - [InverseLerp(a,b,value)](#M-StagPoint-EDF-Net-MathUtil-InverseLerp-System-Double,System-Double,System-Double- 'StagPoint.EDF.Net.MathUtil.InverseLerp(System.Double,System.Double,System.Double)')
@@ -208,6 +230,185 @@ Reads the EDF File information from the provided stream (most often a File Strea
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | file | [System.IO.Stream](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.IO.Stream 'System.IO.Stream') | The stream which contains the EDF file information to be read |
+
+<a name='M-StagPoint-EDF-Net-EdfFile-WriteTo-System-String-'></a>
+### WriteTo(filename) `method`
+
+##### Summary
+
+Saves the EDF file to the given filename
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| filename | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The fully-qualified path to the file you wish to save |
+
+<a name='M-StagPoint-EDF-Net-EdfFile-WriteTo-System-IO-Stream-'></a>
+### WriteTo(file) `method`
+
+##### Summary
+
+Saves the EDF file to the given Stream
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| file | [System.IO.Stream](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.IO.Stream 'System.IO.Stream') | The stream (typically a FileStream, but may be any object derived from Stream)
+to which you want to save the file information. |
+
+<a name='T-StagPoint-EDF-Net-EdfFileHeader'></a>
+## EdfFileHeader `type`
+
+##### Namespace
+
+StagPoint.EDF.Net
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-DigitalMaximum'></a>
+### DigitalMaximum `property`
+
+##### Summary
+
+Contains the DigitalMaximum field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-DigitalMinimum'></a>
+### DigitalMinimum `property`
+
+##### Summary
+
+Contains the DigitalMinimum field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-DurationOfDataRecord'></a>
+### DurationOfDataRecord `property`
+
+##### Summary
+
+The number of seconds represented by each Data Record. If the file contains only Annotations
+this value may be set to zero.
+See
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-HeaderRecordSize'></a>
+### HeaderRecordSize `property`
+
+##### Summary
+
+The size of the header record, in bytes.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-Labels'></a>
+### Labels `property`
+
+##### Summary
+
+Contains the Label field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-NumberOfDataRecords'></a>
+### NumberOfDataRecords `property`
+
+##### Summary
+
+Indicates the number of Data Records stored in the file
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-NumberOfSignals'></a>
+### NumberOfSignals `property`
+
+##### Summary
+
+The number of signals, both Standard signals and Annotations signals, stored in the file.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-PatientInfo'></a>
+### PatientInfo `property`
+
+##### Summary
+
+The local Patient Identification code. For EDF+ files, this will contain the following subfields
+in order: Patient Code, Sex, Birthdate, Patient Name. 
+See
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-PhysicalDimension'></a>
+### PhysicalDimension `property`
+
+##### Summary
+
+Contains the PhysicalDimension field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-PhysicalMaximum'></a>
+### PhysicalMaximum `property`
+
+##### Summary
+
+Contains the PhysicalMaximum field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-PhysicalMinimum'></a>
+### PhysicalMinimum `property`
+
+##### Summary
+
+Contains the PhysicalMinimum field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-Prefiltering'></a>
+### Prefiltering `property`
+
+##### Summary
+
+Contains the Prefiltering field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-RecordingInfo'></a>
+### RecordingInfo `property`
+
+##### Summary
+
+The Local Recording Identification field. For EDF+ files, this will contain the following subfields
+in order: The text 'Startdate', the recording start date, the hospital administration code of the
+investigation (i.e. EEG number or PSG number), a code specifying the responsible investigator or technician,
+and a code specifying the used equipment.
+See
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-Reserved'></a>
+### Reserved `property`
+
+##### Summary
+
+Reserved for future use, with the following exception: For EDF+ files, this field will
+contain one of the following values: "EDF+C" meaning that the file conforms to the
+EDF+ specification and signal data is uninterrupted with all data stored contiguously,
+or "EDF+D" meaning that the file conforms to the EDF+ specification but signal data may be stored discontinuously. 
+See
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-SamplesPerDataRecord'></a>
+### SamplesPerDataRecord `property`
+
+##### Summary
+
+Contains the number of samples stored by each Signal per Data Record.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-SignalReserved'></a>
+### SignalReserved `property`
+
+##### Summary
+
+Contains the Reserved field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-StartTime'></a>
+### StartTime `property`
+
+##### Summary
+
+The Start Date and Start Time of the recording.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-TransducerType'></a>
+### TransducerType `property`
+
+##### Summary
+
+Contains the Transducer field of each of the file's Signals, in order.
+
+<a name='P-StagPoint-EDF-Net-EdfFileHeader-Version'></a>
+### Version `property`
+
+##### Summary
+
+The EDF version number. Should always be 0.
 
 <a name='T-StagPoint-EDF-Net-StandardTexts-FileType'></a>
 ## FileType `type`
