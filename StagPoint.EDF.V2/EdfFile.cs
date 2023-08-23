@@ -16,12 +16,12 @@ namespace StagPoint.EDF.Net
 		/// <summary>
 		/// Returns the EdfFileHeader instance containing all of the information stored in the EDF Header of this file.
 		/// </summary>
-		public EdfFileHeader Header { get; private set; } = new EdfFileHeader();
+		public EdfFileHeader Header { get; } = new EdfFileHeader();
 
 		/// <summary>
 		/// Returns the list of all Signals (both Standard signals and Annotation signals) stored in this file.
 		/// </summary>
-		public List<EdfSignalBase> Signals { get; private set; } = new List<EdfSignalBase>();
+		public List<EdfSignalBase> Signals { get; } = new List<EdfSignalBase>();
 		
 		#endregion
 
@@ -56,10 +56,104 @@ namespace StagPoint.EDF.Net
 				}
 			}
 		}
+
+		public void WriteTo( string filename )
+		{
+			using( var file = File.Create( filename ) )
+			{
+				WriteTo( file );
+			}
+		}
+
+		public void WriteTo( Stream file )
+		{
+			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
+			{
+				// We don't know the number of DataRecords written yet. This value will be overwritten below.  
+				Header.NumberOfDataRecords.Value = 0;
+				
+				// Write the header information 
+				this.Header.WriteTo( writer );
+
+				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
+				var counters = new int[ Signals.Count ];
+
+				bool continueWriting = true;
+				while( continueWriting )
+				{
+					Header.NumberOfDataRecords.Value += 1;
+
+					continueWriting = false;
+					
+					for( int i = 0; i < Signals.Count; i++ )
+					{
+						int signalSamplesWritten = 0;
+
+						if( Signals[ i ] is EdfStandardSignal standardSignal )
+						{
+							counters[ i ]   += writeSignal( writer, standardSignal, counters[ i ] );
+							continueWriting |= counters[ i ] < standardSignal.Samples.Count;
+						}
+						else if( Signals[ i ] is EdfAnnotationSignal annotationSignal )
+						{
+							counters[ i ]   += writeSignal( writer, annotationSignal, counters[ i ] );
+							continueWriting |= counters[ i ] < annotationSignal.Annotations.Count;
+						}
+					}
+				}
+				
+				// Patch up the NumberOfDataRecords by seeking to the position of the field and overwriting the value. 
+				// We could easily make this a constant, but it isn't performance-critical and this is very easy to 
+				// read and understand.
+				file.Position = Header.Version.FieldLength +
+				                Header.PatientInfo.FieldLength +
+				                Header.RecordingInfo.FieldLength +
+				                Header.StartTime.FieldLength +
+				                Header.HeaderRecordSize.FieldLength +
+				                Header.Reserved.FieldLength;
+
+				Header.NumberOfDataRecords.WriteTo( writer );
+			}
+		}
 		
 		#endregion
 
-		#region Private functions 
+		#region Private functions
+
+		private int writeSignal( BinaryWriter writer, EdfStandardSignal signal, int startIndex )
+		{
+			int samplesWritten = 0;
+			int position       = startIndex;
+
+			// Write as many samples as possible, up to NumberOfSamplesPerRecord 
+			while( position < signal.Samples.Count && samplesWritten < signal.NumberOfSamplesPerRecord )
+			{
+				var    sample      = signal.Samples[ position ];
+				double inverseT    = MathUtil.InverseLerp( signal.PhysicalMinimum, signal.PhysicalMaximum, sample );
+				short  outputValue = (short)MathUtil.Lerp( signal.DigitalMinimum, signal.DigitalMaximum, inverseT );
+				
+				writer.Write( outputValue );
+
+				++position;
+				++samplesWritten;
+			}
+			
+			// Need to pad out the rest of any unused space 
+			while( samplesWritten < signal.NumberOfSamplesPerRecord )
+			{
+				// Write a junk value that's easy to spot visually in a hex viewer, for debugging purposes 
+				writer.Write( (short)0x0ABC );
+
+				++samplesWritten;
+			}
+
+			return samplesWritten;
+		}
+
+		private int writeSignal( BinaryWriter writer, EdfAnnotationSignal signal, int startIndex )
+		{
+			return signal.NumberOfSamplesPerRecord;
+		}
 		
 		private void readDataRecord( BinaryReader reader, int index )
 		{
@@ -130,7 +224,14 @@ namespace StagPoint.EDF.Net
 					{
 						descripton = parseString( buffer, ref position );
 
-						Debug.WriteLine( $"Annotation: @{onset}, {duration}, {descripton}" );
+						var annotation = new EdfAnnotation
+						{
+							Onset      = onset,
+							Duration   = duration,
+							Annotation = descripton
+						};
+
+						signal.Annotations.Add( annotation );
 					}
 				}
 				

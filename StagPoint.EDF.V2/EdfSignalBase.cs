@@ -4,16 +4,16 @@
 	{
 		#region Stored properties 
 		
-		public EdfAsciiString  Label                    { get; internal set; } = new EdfAsciiString( 16 );
-		public EdfAsciiString  TransducerType           { get; internal set; } = new EdfAsciiString( 80 );
-		public EdfAsciiString  PhysicalDimension        { get; internal set; } = new EdfAsciiString( 8 );
-		public EdfAsciiFloat   PhysicalMinimum          { get; internal set; } = new EdfAsciiFloat( 8 );
-		public EdfAsciiFloat   PhysicalMaximum          { get; internal set; } = new EdfAsciiFloat( 8 );
-		public EdfAsciiInteger DigitalMinimum           { get; internal set; } = new EdfAsciiInteger( 8 );
-		public EdfAsciiInteger DigitalMaximum           { get; internal set; } = new EdfAsciiInteger( 8 );
-		public EdfAsciiString  Prefiltering             { get; internal set; } = new EdfAsciiString( 80 );
-		public EdfAsciiInteger NumberOfSamplesPerRecord { get; internal set; } = new EdfAsciiInteger( 8 );
-		public EdfAsciiString  Reserved                 { get; internal set; } = new EdfAsciiString( 32 );
+		public EdfAsciiString  Label                    { get; } = new EdfAsciiString( 16 );
+		public EdfAsciiString  TransducerType           { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiString  PhysicalDimension        { get; } = new EdfAsciiString( 8 );
+		public EdfAsciiFloat   PhysicalMinimum          { get; } = new EdfAsciiFloat( 8 );
+		public EdfAsciiFloat   PhysicalMaximum          { get; } = new EdfAsciiFloat( 8 );
+		public EdfAsciiInteger DigitalMinimum           { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiInteger DigitalMaximum           { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiString  Prefiltering             { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiInteger NumberOfSamplesPerRecord { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiString  Reserved                 { get; } = new EdfAsciiString( 32 );
 		
 		#endregion
 		

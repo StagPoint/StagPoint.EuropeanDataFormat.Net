@@ -4,7 +4,10 @@
 ## Contents
 
 - [EdfAnnotation](#T-StagPoint-EDF-Net-EdfAnnotation 'StagPoint.EDF.Net.EdfAnnotation')
+  - [Annotation](#P-StagPoint-EDF-Net-EdfAnnotation-Annotation 'StagPoint.EDF.Net.EdfAnnotation.Annotation')
+  - [Duration](#P-StagPoint-EDF-Net-EdfAnnotation-Duration 'StagPoint.EDF.Net.EdfAnnotation.Duration')
   - [IsTimeKeepingAnnotation](#P-StagPoint-EDF-Net-EdfAnnotation-IsTimeKeepingAnnotation 'StagPoint.EDF.Net.EdfAnnotation.IsTimeKeepingAnnotation')
+  - [Onset](#P-StagPoint-EDF-Net-EdfAnnotation-Onset 'StagPoint.EDF.Net.EdfAnnotation.Onset')
 - [EdfAnnotationSignal](#T-StagPoint-EDF-Net-EdfAnnotationSignal 'StagPoint.EDF.Net.EdfAnnotationSignal')
   - [#ctor(header)](#M-StagPoint-EDF-Net-EdfAnnotationSignal-#ctor-StagPoint-EDF-Net-EdfSignalHeader- 'StagPoint.EDF.Net.EdfAnnotationSignal.#ctor(StagPoint.EDF.Net.EdfSignalHeader)')
   - [Annotations](#P-StagPoint-EDF-Net-EdfAnnotationSignal-Annotations 'StagPoint.EDF.Net.EdfAnnotationSignal.Annotations')
@@ -30,6 +33,26 @@
 
 StagPoint.EDF.Net
 
+##### Summary
+
+Can be used to store text annotations, time, events, stimuli, etc.
+
+<a name='P-StagPoint-EDF-Net-EdfAnnotation-Annotation'></a>
+### Annotation `property`
+
+##### Summary
+
+These annotations may only contain UCS characters (ISO 10646, the 'Universal Character Set', which is
+identical to the Unicode version 3+ character set) encoded by UTF-8.
+
+<a name='P-StagPoint-EDF-Net-EdfAnnotation-Duration'></a>
+### Duration `property`
+
+##### Summary
+
+Specifies the duration of the annotated event in seconds. If such a specification is not relevant,
+Duration can be skipped by setting the value to 0.
+
 <a name='P-StagPoint-EDF-Net-EdfAnnotation-IsTimeKeepingAnnotation'></a>
 ### IsTimeKeepingAnnotation `property`
 
@@ -37,6 +60,14 @@ StagPoint.EDF.Net
 
 TimeKeeping Annotations are automatically stored in the file for purposes of
 indicating when each DataRecord begins relative to the start of the file.
+
+<a name='P-StagPoint-EDF-Net-EdfAnnotation-Onset'></a>
+### Onset `property`
+
+##### Summary
+
+Specifies the number of seconds by which the onset of the annotated event follows ('+') or precedes ('-')
+the startdate/time of the file (the StartTime that is specified in the file header)
 
 <a name='T-StagPoint-EDF-Net-EdfAnnotationSignal'></a>
 ## EdfAnnotationSignal `type`

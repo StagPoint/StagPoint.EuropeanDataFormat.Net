@@ -32,10 +32,27 @@ namespace StagPoint.EDF.Net
 		#endregion
 	}
 
+	/// <summary>
+	/// Can be used to store text annotations, time, events, stimuli, etc. 
+	/// </summary>
 	public class EdfAnnotation
 	{
-		public double Onset      { get; set; } = default;
-		public double Duration   { get; set; } = default;
+		/// <summary>
+		/// Specifies the number of seconds by which the onset of the annotated event follows ('+') or precedes ('-')
+		/// the startdate/time of the file (the StartTime that is specified in the file header)
+		/// </summary>
+		public double Onset { get; set; } = default;
+
+		/// <summary>
+		/// Specifies the duration of the annotated event in seconds. If such a specification is not relevant,
+		/// Duration can be skipped by setting the value to 0.
+		/// </summary>
+		public double Duration { get; set; } = default;
+
+		/// <summary>
+		/// These annotations may only contain UCS characters (ISO 10646, the 'Universal Character Set', which is
+		/// identical to the Unicode version 3+ character set) encoded by UTF-8.
+		/// </summary>
 		public string Annotation { get; set; } = string.Empty;
 
 		/// <summary>
@@ -48,5 +65,14 @@ namespace StagPoint.EDF.Net
 			       Duration == 0.0 && 
 			       Annotation == String.Empty;
 		}
+		
+		#region Base class overrides
+
+		public override string ToString()
+		{
+			return $"@{Onset}: {Annotation}";
+		}
+
+		#endregion
 	}
 }

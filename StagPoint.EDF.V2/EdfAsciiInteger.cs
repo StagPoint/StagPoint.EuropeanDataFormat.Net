@@ -1,5 +1,7 @@
 ﻿using System.IO;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace StagPoint.EDF.Net
 {
 
@@ -12,20 +14,14 @@ namespace StagPoint.EDF.Net
 
 		public int Value { get; set; }
 
-		public bool RequireSignPrefix { get; private set; }
-
 		#endregion
 
 		#region Constructors
 
-		public EdfAsciiInteger( int fieldLength, bool requireSignPrefix = false ) 
-			: base( fieldLength )
-		{
-			this.RequireSignPrefix = requireSignPrefix;
-		}
+		public EdfAsciiInteger( int fieldLength ) : base( fieldLength ) { }
 
-		public EdfAsciiInteger( int fieldLength, int value, bool forceSignPrefix = false )
-			: this( fieldLength, forceSignPrefix )
+		public EdfAsciiInteger( int fieldLength, int value )
+			: base( fieldLength )
 		{
 			this.Value = value;
 		}
@@ -43,16 +39,9 @@ namespace StagPoint.EDF.Net
 
 		public override void WriteTo( BinaryWriter buffer )
 		{
-			var stringVal            = this.Value.ToString();
-			var remainingFieldLength = FieldLength;
+			var stringVal = this.Value.ToString();
 
-			if( RequireSignPrefix && this.Value >= 0 )
-			{
-				buffer.Write( '+' );
-				remainingFieldLength -= 1;
-			}
-
-			BufferHelper.WriteToBuffer( buffer, stringVal, remainingFieldLength );
+			BufferHelper.WriteToBuffer( buffer, stringVal, FieldLength );
 		}
 
 		#endregion

@@ -10,8 +10,6 @@ namespace StagPoint.EDF.Net
 
 		public double Value { get; set; }
 
-		public bool RequireSignPrefix { get; private set; }
-
 		#endregion
 
 		#region Private fields
@@ -23,14 +21,10 @@ namespace StagPoint.EDF.Net
 
 		#region Constructors
 
-		public EdfAsciiFloat( int fieldLength, bool requireSignPrefix = false ) 
-			: base( fieldLength )
-		{
-			this.RequireSignPrefix = requireSignPrefix;
-		}
+		public EdfAsciiFloat( int fieldLength ) : base( fieldLength ) { }
 
 		public EdfAsciiFloat( int fieldLength, double value, bool requireSignPrefix = false )
-			: this( fieldLength, requireSignPrefix )
+			: this( fieldLength )
 		{
 			this.Value = value;
 		}
@@ -50,15 +44,7 @@ namespace StagPoint.EDF.Net
 		{
 			var stringVal = this.Value.ToString( STRING_FORMAT, CultureInfo.InvariantCulture );
 
-			var remainingFieldLength = FieldLength;
-
-			if( RequireSignPrefix && this.Value >= 0 )
-			{
-				buffer.Write( '+' );
-				remainingFieldLength -= 1;
-			}
-
-			BufferHelper.WriteToBuffer( buffer, stringVal, remainingFieldLength );
+			BufferHelper.WriteToBuffer( buffer, stringVal, FieldLength );
 		}
 
 		#endregion
@@ -68,12 +54,6 @@ namespace StagPoint.EDF.Net
 		public override string ToString()
 		{
 			return Value.ToString( CultureInfo.InvariantCulture );
-		}
-
-		public override int GetHashCode()
-		{
-			// ReSharper disable once NonReadonlyMemberInGetHashCode
-			return Value.GetHashCode();
 		}
 
 		public static implicit operator double( EdfAsciiFloat field )

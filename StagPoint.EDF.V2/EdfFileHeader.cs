@@ -1,37 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace StagPoint.EDF.Net
 {
 	public class EdfFileHeader
 	{
-		#region Public properties 
-		
-		public EdfAsciiInteger  Version              { get; private set; } = new EdfAsciiInteger( 8 );
-		public EdfAsciiString   PatientInfo          { get; set; }         = new EdfAsciiString( 80 );
-		public EdfAsciiString   RecordingInfo        { get; set; }         = new EdfAsciiString( 80 );
-		public EdfAsciiDateTime StartTime            { get; set; }         = new EdfAsciiDateTime();
-		public EdfAsciiInteger  HeaderRecordSize     { get; private set; } = new EdfAsciiInteger( 8 );
-		public EdfAsciiString   Reserved             { get; set; }         = new EdfAsciiString( 44 );
-		public EdfAsciiInteger  NumberOfDataRecords  { get; set; }         = new EdfAsciiInteger( 8 );
-		public EdfAsciiFloat    DurationOfDataRecord { get; set; }         = new EdfAsciiFloat( 8 );
-		public EdfAsciiInteger  NumberOfSignals      { get; set; }         = new EdfAsciiInteger( 4 );
+		#region Public properties
+        
+		public EdfAsciiInteger  Version              { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiString   PatientInfo          { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiString   RecordingInfo        { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiDateTime StartTime            { get; } = new EdfAsciiDateTime();
+		public EdfAsciiInteger  HeaderRecordSize     { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiString   Reserved             { get; } = new EdfAsciiString( 44 );
+		public EdfAsciiInteger  NumberOfDataRecords  { get; } = new EdfAsciiInteger( 8 );
+		public EdfAsciiFloat    DurationOfDataRecord { get; } = new EdfAsciiFloat( 8 );
+		public EdfAsciiInteger  NumberOfSignals      { get; } = new EdfAsciiInteger( 4 );
 
-		public List<EdfAsciiString>  Labels               { get; set; } = new List<EdfAsciiString>();
-		public List<EdfAsciiString>  TransducerType       { get; set; } = new List<EdfAsciiString>();
-		public List<EdfAsciiString>  PhysicalDimension    { get; set; } = new List<EdfAsciiString>();
-		public List<EdfAsciiFloat>   PhysicalMinimum      { get; set; } = new List<EdfAsciiFloat>();
-		public List<EdfAsciiFloat>   PhysicalMaximum      { get; set; } = new List<EdfAsciiFloat>();
-		public List<EdfAsciiInteger> DigitalMinimum       { get; set; } = new List<EdfAsciiInteger>();
-		public List<EdfAsciiInteger> DigitalMaximum       { get; set; } = new List<EdfAsciiInteger>();
-		public List<EdfAsciiString>  Prefiltering         { get; set; } = new List<EdfAsciiString>();
-		public List<EdfAsciiInteger> SamplesPerDataRecord { get; set; } = new List<EdfAsciiInteger>();
-		public List<EdfAsciiString>  SignalReserved       { get; set; } = new List<EdfAsciiString>();
+		public List<EdfAsciiString>  Labels               { get; } = new List<EdfAsciiString>();
+		public List<EdfAsciiString>  TransducerType       { get; } = new List<EdfAsciiString>();
+		public List<EdfAsciiString>  PhysicalDimension    { get; } = new List<EdfAsciiString>();
+		public List<EdfAsciiFloat>   PhysicalMinimum      { get; } = new List<EdfAsciiFloat>();
+		public List<EdfAsciiFloat>   PhysicalMaximum      { get; } = new List<EdfAsciiFloat>();
+		public List<EdfAsciiInteger> DigitalMinimum       { get; } = new List<EdfAsciiInteger>();
+		public List<EdfAsciiInteger> DigitalMaximum       { get; } = new List<EdfAsciiInteger>();
+		public List<EdfAsciiString>  Prefiltering         { get; } = new List<EdfAsciiString>();
+		public List<EdfAsciiInteger> SamplesPerDataRecord { get; } = new List<EdfAsciiInteger>();
+		public List<EdfAsciiString>  SignalReserved       { get; } = new List<EdfAsciiString>();
 
-		internal List<EdfSignalHeader> SignalHeaders { get; set; } = new List<EdfSignalHeader>();
+		internal List<EdfSignalHeader> SignalHeaders { get; } = new List<EdfSignalHeader>();
 		
 		#endregion 
 		
@@ -132,6 +133,7 @@ namespace StagPoint.EDF.Net
 		private void readListFromBuffer<T>( BinaryReader buffer, List<T> list, int count, Func<T> createItem ) where T : EdfAsciiField
 		{
 			list.Clear();
+			list.Capacity = count;
 			
 			for( int i = 0; i < count; i++ )
 			{
