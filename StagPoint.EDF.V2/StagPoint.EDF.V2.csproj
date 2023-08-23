@@ -15,14 +15,5 @@
         <AssemblyName>StagPoint.EDF.Net.v2</AssemblyName>
         <RootNamespace>StagPoint.EDF.Net</RootNamespace>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DocumentationMarkdown>$(MSBuildProjectDirectory)\StagPoint.EDF.Net API.md</DocumentationMarkdown>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Vsxmd" Version="1.4.5">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-    </ItemGroup>
-
 </Project>
