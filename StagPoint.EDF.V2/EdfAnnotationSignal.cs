@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 
 namespace StagPoint.EDF.Net
@@ -22,12 +20,37 @@ namespace StagPoint.EDF.Net
 		
 		#endregion
 		
-		#region Constructor 
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the EdfAnnotationSignal class
+		/// </summary>
+		public EdfAnnotationSignal()
+		{
+			// From the EDF+ Specification: https://www.edfplus.info/specs/edfplus.html#annotationssignal
+			// The 'EDF Annotations' signal only has meaningful header fields 'label' and 'nr of samples in each data
+			// record'. For the sake of EDF compatibility, the fields 'digital minimum' and 'digital maximum' must be
+			// filled with -32768 and 32767, respectively. The 'Physical maximum' and 'Physical minimum' fields must
+			// contain values that differ from each other. The other fields of this signal are filled with spaces.
+			DigitalMinimum.Value  = short.MinValue;
+			DigitalMaximum.Value  = short.MaxValue;
+			PhysicalMinimum.Value = short.MinValue;
+			PhysicalMaximum.Value = short.MaxValue;
+			TransducerType.Value  = string.Empty;
+			Prefiltering.Value    = string.Empty;
+			Reserved.Value        = string.Empty;
+
+			// All Annotation Signals must have a label of "EDF Annotations"
+			Label.Value = StandardTexts.SignalType.EdfAnnotations;
+            
+			// The signal must allocate enough memory to store timekeeping annotations, at the very least. 
+			NumberOfSamplesPerRecord.Value = 8;
+		}
 		
 		/// <summary>
 		/// Initializes a new instance of the EdfAnnotationSignal class
 		/// </summary>
-		/// <param name="header">And EdfSignalHeader instance containing all of the essential Signal information</param>
+		/// <param name="header">An EdfSignalHeader instance containing all of the essential Signal information</param>
 		internal EdfAnnotationSignal( EdfSignalHeader header ) : base( header )
 		{
 		}
@@ -52,7 +75,7 @@ namespace StagPoint.EDF.Net
 		/// Specifies the duration of the annotated event in seconds. If such a specification is not relevant,
 		/// Duration can be skipped by setting the value to 0.
 		/// </summary>
-		public double Duration { get; set; } = default;
+		public double? Duration { get; set; } = default;
 
 		/// <summary>
 		/// These annotations may only contain UCS characters (ISO 10646, the 'Universal Character Set', which is
@@ -64,10 +87,7 @@ namespace StagPoint.EDF.Net
 		/// TimeKeeping Annotations are automatically stored in the file for purposes of
 		/// indicating when each DataRecord begins relative to the start of the file.
 		/// </summary>
-		public bool IsTimeKeepingAnnotation
-		{
-			get => Duration <= double.Epsilon && string.IsNullOrEmpty( Annotation );
-		}
+		public bool IsTimeKeepingAnnotation { get; internal set; }
 		
 		#endregion 
 		
@@ -88,10 +108,15 @@ namespace StagPoint.EDF.Net
 
 			size += Onset.ToString( CultureInfo.InvariantCulture ).Length;
 
-			if( this.Duration > double.Epsilon )
+			if( IsTimeKeepingAnnotation )
+			{
+				return size + 3;
+			}
+
+			if( this.Duration.HasValue )
 			{
 				size += 1; // 0x15 delimiter
-				size += Duration.ToString( CultureInfo.InvariantCulture ).Length;
+				size += Duration.Value.ToString( CultureInfo.InvariantCulture ).Length;
 			}
 
 			if( !string.IsNullOrEmpty( Annotation ) )
@@ -109,9 +134,22 @@ namespace StagPoint.EDF.Net
 
 		#region Base class overrides
 
+		/// <summary>
+		/// Returns a string representation of this Annotation
+		/// </summary>
 		public override string ToString()
 		{
-			return $"@{Onset}: {Annotation}";
+			if( IsTimeKeepingAnnotation )
+			{
+				return $"Start Time: {Onset} (Timekeeping Annotation)";
+			}
+			
+			if( Duration.HasValue )
+			{
+				return $"Onset: {Onset}, Duration: {Duration}, Annotation: {Annotation}";
+			}
+			
+			return $"Onset: {Onset}, Annotation: {Annotation ?? string.Empty}";
 		}
 
 		#endregion

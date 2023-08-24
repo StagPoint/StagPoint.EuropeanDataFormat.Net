@@ -17,17 +17,11 @@
 		
 		#endregion
 		
-		#region Derived properties
-
-		public double ScaleFactor { get { return (PhysicalMaximum - PhysicalMinimum) / (DigitalMaximum - DigitalMinimum); } }
-
-		#endregion
-		
 		#region Base class overrides
 
 		public override string ToString()
 		{
-			return $"'{Label}' - {TransducerType} - {NumberOfSamplesPerRecord} - Scale: {ScaleFactor:F3}";
+			return $"'{Label}' - {TransducerType} - {NumberOfSamplesPerRecord}";
 		}
 
 		#endregion

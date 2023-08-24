@@ -89,7 +89,6 @@ namespace StagPoint.EDF.Net
 		/// </summary>
 		public List<EdfAsciiFloat> PhysicalMinimum { get; private set; } = new List<EdfAsciiFloat>();
 
-
 		/// <summary>
 		/// Contains the PhysicalMaximum field of each of the file's Signals, in order.
 		/// </summary>

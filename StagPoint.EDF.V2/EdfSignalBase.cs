@@ -19,6 +19,8 @@
 		
 		#region Constructors
 
+		protected EdfSignalBase() { }
+
 		internal EdfSignalBase( EdfSignalHeader header )
 		{
 			Label.Value                    = header.Label;

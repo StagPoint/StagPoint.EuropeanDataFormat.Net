@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace StagPoint.EDF.Net
@@ -23,6 +24,18 @@ namespace StagPoint.EDF.Net
 		/// Returns the list of all Signals (both Standard signals and Annotation signals) stored in this file.
 		/// </summary>
 		public List<EdfSignalBase> Signals { get; } = new List<EdfSignalBase>();
+
+		/// <summary>
+		/// Returns TRUE if this file is an EDF+ file (makes use of EDF+ features)
+		/// </summary>
+		public bool IsEdfPlusFile
+		{
+			get
+			{
+				return Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Continuous ) ||
+				       Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Discontinuous );
+			}
+		}
 		
 		#endregion
 
@@ -77,6 +90,19 @@ namespace StagPoint.EDF.Net
 		/// to which you want to save the file information.</param>
 		public void WriteTo( Stream file )
 		{
+			// EDF+ files must have an Annotations Signal, for timekeeping if nothing else 
+			var isEdfPlusFile = IsEdfPlusFile;
+			if( isEdfPlusFile )
+			{
+				if( !Signals.Any( x => x is EdfAnnotationSignal ) )
+				{
+					var defaultAnnotationSignal = new EdfAnnotationSignal();
+					defaultAnnotationSignal.NumberOfSamplesPerRecord.Value = 8;
+
+					Signals.Add( defaultAnnotationSignal );
+				}
+			}
+			
 			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
 			{
 				// We don't know the number of DataRecords written yet. This value will be overwritten below.  
@@ -87,9 +113,11 @@ namespace StagPoint.EDF.Net
 				
 				// Write the header information 
 				Header.WriteTo( writer );
-
+                
 				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
 				var counters = new int[ Signals.Count ];
+
+				var dataRecordStartTime = 0.0;
 
 				bool continueWriting = true;
 				while( continueWriting )
@@ -97,6 +125,7 @@ namespace StagPoint.EDF.Net
 					Header.NumberOfDataRecords.Value += 1;
 
 					continueWriting = false;
+					var writeTimekeepingAnnotation = isEdfPlusFile;
 					
 					for( int i = 0; i < Signals.Count; i++ )
 					{
@@ -107,10 +136,19 @@ namespace StagPoint.EDF.Net
 						}
 						else if( Signals[ i ] is EdfAnnotationSignal annotationSignal )
 						{
-							counters[ i ]   += writeAnnotationSignal( writer, annotationSignal, counters[ i ] );
-							continueWriting |= counters[ i ] < annotationSignal.Annotations.Count;
+							if( !isEdfPlusFile )
+							{
+								throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
+							}
+							
+							counters[ i ] += writeAnnotationSignal( writer, annotationSignal, counters[ i ], writeTimekeepingAnnotation, dataRecordStartTime );
+							
+							continueWriting            |= counters[ i ] < annotationSignal.Annotations.Count;
+							writeTimekeepingAnnotation =  false;
 						}
 					}
+
+					dataRecordStartTime += Header.DurationOfDataRecord;
 				}
 				
 				// Patch up the NumberOfDataRecords by seeking to the position of the field and overwriting the value. 
@@ -161,14 +199,42 @@ namespace StagPoint.EDF.Net
 			return samplesWritten;
 		}
 
-		private int writeAnnotationSignal( BinaryWriter writer, EdfAnnotationSignal signal, int position )
+		private int writeAnnotationSignal( BinaryWriter writer, EdfAnnotationSignal signal, int position, bool storeTimekeeping, double dataRecordStartTime )
 		{
 			var bufferStartPosition = writer.BaseStream.Position;
 			int bytesWritten        = 0;
 
+			if( storeTimekeeping )
+			{
+				long startPos = writer.BaseStream.Position;
+				
+				if( dataRecordStartTime >= 0 )
+				{
+					writer.Write( (byte)'+' );
+				}
+
+				var startTimeAsString = dataRecordStartTime.ToString( CultureInfo.InvariantCulture );
+				writer.Write( Encoding.ASCII.GetBytes( startTimeAsString ) );
+					
+				writer.Write( (byte)0x14 );
+				writer.Write( (byte)0x14 );
+				writer.Write( (byte)0x00 );
+
+				bytesWritten = (int)(writer.BaseStream.Position - startPos);
+			}
+				
 			while( position < signal.Annotations.Count )
 			{
-				var annotation     = signal.Annotations[ position ];
+				var annotation = signal.Annotations[ position ];
+				
+				// Ignore any Timekeeping Annotations in the Signal, as these were read from file previously and 
+				// may no longer match the file. 
+				if( annotation.IsTimeKeepingAnnotation )
+				{
+					++position;
+					continue;
+				}
+
 				var annotationSize = annotation.GetSize();
 
 				// An Annotation must not be split across DataRecord boundaries 
@@ -190,12 +256,12 @@ namespace StagPoint.EDF.Net
 				}
 				
 				// Write Duration, if present
-				if( annotation.Duration > double.Epsilon )
+				if( annotation.Duration.HasValue )
 				{
 					// Write delimiter
 					writer.Write( (byte)0x15 );
 
-					var durationAsString = annotation.Duration.ToString( CultureInfo.InvariantCulture );
+					var durationAsString = annotation.Duration.Value.ToString( CultureInfo.InvariantCulture );
 					writer.Write( Encoding.ASCII.GetBytes( durationAsString ) );
 				}
 				
@@ -249,6 +315,8 @@ namespace StagPoint.EDF.Net
 				// TODO: Should we assert that EDF+C timekeeping annotations always match calculated Data Record start time?
 			}
 
+			var isFirstAnnotationSignal = true;
+
 			foreach( var signal in Signals )
 			{
 				if( signal is EdfStandardSignal standardSignal )
@@ -257,12 +325,13 @@ namespace StagPoint.EDF.Net
 				}
 				else if( signal is EdfAnnotationSignal annotationSignal )
 				{
-					readSignal( reader, annotationSignal );
+					readSignal( reader, annotationSignal, isFirstAnnotationSignal );
+					isFirstAnnotationSignal = false;
 				}
 			}
 		}
-
-		private void readSignal( BinaryReader reader, EdfAnnotationSignal signal )
+		
+		private void readSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation )
 		{
 			// TODO: This code relies too heavily on the file format being correct, and is potentially fragile as a result.  
 
@@ -271,43 +340,48 @@ namespace StagPoint.EDF.Net
 			var buffer   = reader.ReadBytes( length );
 			int position = 0;
 
-			while( position < length )
+			if( expectTimekeepingAnnotation )
 			{
-				double onset      = parseFloat( buffer, true, ref position );
+				signal.Annotations.Add( readTimekeepingAnnotation( ref position ) );
+			}
+
+			while( position < length && buffer[ position ] > 0x00 )
+			{
+				double onset      = parseFloat( true, ref position );
 				double duration   = 0;
 				string descripton = string.Empty;
 
 				// If an annotation contains a duration, it will be preceded by 0x15
-				if( buffer[ position ] == '\x15' )
+				if( buffer[ position ] == 0x15 )
 				{
 					++position;
-					duration = parseFloat( buffer, false, ref position );
+					duration = parseFloat( false, ref position );
 				}
-				
+
 				// If an annotation contains a description, it will be preceded by 0x15
 				// Note that there may be multiple consecutive descriptions for the same Onset and Duration, 
 				// and each should be added as a separate Annotation.
 				// See the "Time-stamped Annotations Lists (TALs) in an 'EDF Annotations' Signal" section of the EDF+ spec
 				//		https://www.edfplus.info/specs/edfplus.html#tal
-				while( buffer[ position ] == '\x14' )
+				while( buffer[ position ] == 0x14 )
 				{
-					++position;
-
-					if( buffer[ position ] != 0 )
+					if( buffer[ ++position ] == 0x00 )
 					{
-						descripton = parseString( buffer, ref position );
-
-						var annotation = new EdfAnnotation
-						{
-							Onset      = onset,
-							Duration   = duration,
-							Annotation = descripton
-						};
-
-						signal.Annotations.Add( annotation );
+						break;
 					}
+
+					descripton = parseString( ref position );
+
+					var annotation = new EdfAnnotation
+					{
+						Onset      = onset,
+						Duration   = duration,
+						Annotation = descripton
+					};
+
+					signal.Annotations.Add( annotation );
 				}
-				
+
 				// Consume the trailing 0x00 character. There may be multiple null characters present
 				// if there are no more annotations in this Data Record, because the reserved space 
 				// must be padded.
@@ -317,36 +391,54 @@ namespace StagPoint.EDF.Net
 				}
 			}
 
-			string parseString( byte[] bytes, ref int pos )
+			EdfAnnotation readTimekeepingAnnotation( ref int pos )
+			{
+				var startPosition = pos;
+
+				double onset = parseFloat( true, ref position );
+
+				if( buffer[ position++ ] != 0x14 || buffer[ position++ ] != 0x14 || buffer[ position++ ] != 0x00 )
+				{
+					throw new FormatException( $"Missing or invalid timekeeping annotation at position {startPosition}" );
+				}
+
+				return new EdfAnnotation
+				{
+					Onset                   = onset,
+					IsTimeKeepingAnnotation = true
+				};
+			}
+
+			string parseString( ref int pos )
 			{
 				int startPos = pos;
 
-				while( bytes[ pos ] >= 32 || (bytes[ pos ] >= 9 && bytes[ pos ] <= 13) )
+				while( buffer[ pos ] != 0x14 )
 				{
 					pos++;
 				}
 
-				return Encoding.UTF8.GetString( bytes, startPos, pos - startPos );
+				return Encoding.UTF8.GetString( buffer, startPos, pos - startPos );
 			}
 			
-			double parseFloat( byte[] bytes, bool requireSign, ref int pos )
+			double parseFloat( bool requireSign, ref int pos )
 			{
 				int startPos = pos;
 				
 				// The Onset field must start with a + or - character
-				if( requireSign && bytes[ pos ] != '+' && bytes[ pos ] != '-' )
+				if( requireSign && buffer[ pos ] != '+' && buffer[ pos ] != '-' )
 				{
 					throw new FormatException( $"Expected a '+' or '-' character at pos {pos}" );
 				}
 
 				// The field may only contain the '+', '-', '.', and '0-9' characters.
-				while( buffer[pos] >= 43 && buffer[pos] <= 57 )
+				while( buffer[ pos ] >= 43 && buffer[ pos ] <= 57 )
 				{
 					pos++;
 				}
 
-				var stringRepresentation = Encoding.ASCII.GetString( bytes, startPos, pos - startPos );
-				var result = double.Parse( stringRepresentation );
+				var stringRepresentation = Encoding.ASCII.GetString( buffer, startPos, pos - startPos );
+				var result = double.Parse( stringRepresentation, CultureInfo.InvariantCulture );
 
 				return result;
 			}
