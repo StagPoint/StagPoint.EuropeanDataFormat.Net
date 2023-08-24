@@ -13,6 +13,7 @@
 		public EdfAsciiInteger DigitalMaximum           { get; internal set;} = new EdfAsciiInteger( 8 );
 		public EdfAsciiString  Prefiltering             { get; internal set;} = new EdfAsciiString( 80 );
 		public EdfAsciiInteger NumberOfSamplesPerRecord { get; internal set;} = new EdfAsciiInteger( 8 );
+		public EdfAsciiInteger NumberOfDataRecords      { get; internal set;} = new EdfAsciiInteger( 8 );
 		public EdfAsciiString  Reserved                 { get; internal set;} = new EdfAsciiString( 32 );
 		
 		#endregion

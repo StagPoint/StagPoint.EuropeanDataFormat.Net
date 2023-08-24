@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -60,6 +61,8 @@ namespace StagPoint.EDF.Net
 
 	/// <summary>
 	/// Can be used to store text annotations, time, events, stimuli, etc. 
+	/// Annotations may only contain UCS characters (ISO 10646, the 'Universal Character Set', which is
+	/// identical to the Unicode version 3+ character set) encoded by UTF-8.
 	/// </summary>
 	public class EdfAnnotation
 	{
@@ -73,19 +76,44 @@ namespace StagPoint.EDF.Net
 
 		/// <summary>
 		/// Specifies the duration of the annotated event in seconds. If such a specification is not relevant,
-		/// Duration can be skipped by setting the value to 0.
+		/// Duration can be skipped by setting the value to null.
 		/// </summary>
-		public double? Duration { get; set; } = default;
+		public double? Duration { get; set; } = null;
 
 		/// <summary>
-		/// These annotations may only contain UCS characters (ISO 10646, the 'Universal Character Set', which is
-		/// identical to the Unicode version 3+ character set) encoded by UTF-8.
+		/// Gets or sets the text of an annotation, when there is only one annotation in a Timestamped Annotation List.
+		/// This is a convenience function for accessing the first element of the <see cref="AnnotationList"/> list;
 		/// </summary>
-		public string Annotation { get; set; } = string.Empty;
+		public string Annotation
+		{
+			get
+			{
+				return AnnotationList.Count > 0 ? AnnotationList[ 0 ] : string.Empty;
+			}
+			set
+			{
+				if( AnnotationList.Count == 0 )
+				{
+					AnnotationList.Add( value );
+				}
+				else
+				{
+					AnnotationList[ 0 ] = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Holds the list of all annotations contained in a
+		/// <a href="https://www.edfplus.info/specs/edfplus.html#tal">Timestamped Annotation List</a>.
+		/// </summary>
+		public List<string> AnnotationList { get; private set; } = new List<string>();
 		
 		/// <summary>
 		/// TimeKeeping Annotations are automatically stored in the file for purposes of
 		/// indicating when each DataRecord begins relative to the start of the file.
+		/// They may optionally be added to the EdfAnnotationSignal when loading an EDF+ file,
+		/// but will never be saved from an EdfAnnotationSignal when writing to a file.
 		/// </summary>
 		public bool IsTimeKeepingAnnotation { get; internal set; }
 		
@@ -110,7 +138,8 @@ namespace StagPoint.EDF.Net
 
 			if( IsTimeKeepingAnnotation )
 			{
-				return size + 3;
+				// 0x14 0x14 0x00 delimiters
+				return size + 3; 
 			}
 
 			if( this.Duration.HasValue )
@@ -119,13 +148,17 @@ namespace StagPoint.EDF.Net
 				size += Duration.Value.ToString( CultureInfo.InvariantCulture ).Length;
 			}
 
-			if( !string.IsNullOrEmpty( Annotation ) )
+			// 0x14 Annotation text delimiter
+			size += 1;
+
+			foreach( var description in AnnotationList )
 			{
+				size += Encoding.UTF8.GetByteCount( description );
 				size += 1; // 0x14 delimiter
-				size += Encoding.UTF8.GetByteCount( Annotation );
 			}
 
-			size += 2; // 0x14 and 0x00 end delimiters
+			// 0x00 End of annotation delimiter
+			size += 1;
 
 			return size;
 		}

@@ -228,6 +228,7 @@ namespace StagPoint.EDF.Net
 					DigitalMaximum           = DigitalMaximum[ i ],
 					Prefiltering             = Prefiltering[ i ],
 					NumberOfSamplesPerRecord = SamplesPerDataRecord[ i ],
+					NumberOfDataRecords      = NumberOfDataRecords,
 					Reserved                 = SignalReserved[ i ]
 				};
 

@@ -18,8 +18,7 @@ public class EdfFile_Tests
 			Assert.Fail( "Test file missing" );
 		}
 
-		var file = new EdfFile();
-		file.ReadFrom( filename );
+		var file = EdfFile.Open( filename );
 
 		Assert.AreEqual( StandardTexts.FileType.EDF_Plus_Continuous, file.Header.Reserved );
 		Assert.AreEqual( 90,                                         file.Header.NumberOfDataRecords );
@@ -39,8 +38,7 @@ public class EdfFile_Tests
 			Assert.Fail( "Test file missing" );
 		}
 
-		var file = new EdfFile();
-		file.ReadFrom( filename );
+		var file = EdfFile.Open( filename );
 
 		var tempFilename = Path.ChangeExtension( Path.GetTempFileName(), ".edf" );
 
@@ -63,6 +61,89 @@ public class EdfFile_Tests
 		finally
 		{
 			File.Delete( tempFilename );
+		}
+	}
+
+	[TestMethod]
+	public void VerifyCorrectSignalFrequency()
+	{
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "signals_only2.edf" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		var file = EdfFile.Open( filename );
+
+		// Frequencies obtained by reading the file with Polyman
+		var correctFrequencies = new double[]
+		{
+			128, 128, 128, 128, 128, 128, 128, 128, 128, 
+			128, 128, 128, 128, 128, 128, 128, 32, 32, 4
+		};
+
+		for( int i = 0; i < file.Signals.Count; i++ )
+		{
+			var loop = file.Signals[ i ];
+			
+			if( loop is EdfStandardSignal signal )
+			{
+				Assert.AreEqual( correctFrequencies[ i ], signal.FrequencyInHz );
+			}
+		}
+	}
+
+	[TestMethod]
+	public void AutoCalculateDataRecordSize()
+	{
+		var signalFrequencies = new double[]
+		{
+			128, 128, 128, 128, 128, 128, 128, 128, 128, 
+			128, 128, 128, 128, 128, 128, 128, 32, 32, 4,
+			0.25,
+		};
+
+		var lcm = LCM( signalFrequencies );
+
+		foreach( var number in signalFrequencies )
+		{
+			Assert.AreEqual( 0, lcm % number, 0.1 );
+		}
+	}
+	
+	static long LCM( params double[] numbers)
+	{
+		return (long)numbers.Aggregate( lcm );
+		
+		double lcm(double a, double b)
+		{
+			var longA = (long)Math.Floor( a * 100 );
+			var longB = (long)Math.Floor( b * 100 );
+			
+			var result = Math.Abs(longA * longB) / gcd(longA, longB);
+
+			return Math.Floor( result / 100.0 );
+		}
+
+		long gcd( long a, long b )
+		{
+			while( true )
+			{
+				if( a < b )
+				{
+					(a, b) = (b, a);
+					continue;
+				}
+
+				if( b == 0 )
+				{
+					return a;
+				}
+
+				var a1 = a;
+				a = b;
+				b = a1 - (long)Math.Floor( (double)a1 / b ) * b;
+			}
 		}
 	}
 }

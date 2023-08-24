@@ -38,6 +38,22 @@ namespace StagPoint.EDF.Net
 		}
 		
 		#endregion
+		
+		#region Static functions
+
+		/// <summary>
+		/// Returns a new EdfFile instance loaded from the given filename
+		/// </summary>
+		/// <param name="filename">The fully-qualified path to the EDF file to open</param>
+		public static EdfFile Open( string filename )
+		{
+			var file = new EdfFile();
+			file.ReadFrom( filename );
+
+			return file;
+		}
+		
+		#endregion 
 
 		#region Public functions
 
@@ -61,9 +77,12 @@ namespace StagPoint.EDF.Net
 		{
 			using( var reader = new BinaryReader( file, Encoding.ASCII ) )
 			{
-				this.Header.ReadFrom( reader );
-				this.Header.AllocateSignals( this.Signals );
+				Header.ReadFrom( reader );
+				Header.AllocateSignals( this.Signals );
 
+				// Ensure that EdfStandardSignal.FrequencyInHz is updated.
+				updateSignalFrequency();
+			
 				for( int i = 0; i < Header.NumberOfDataRecords; i++ )
 				{
 					readDataRecord( reader, i );
@@ -102,6 +121,9 @@ namespace StagPoint.EDF.Net
 					Signals.Add( defaultAnnotationSignal );
 				}
 			}
+			
+			// Ensure that EdfStandardSignal.FrequencyInHz is updated.
+			updateSignalFrequency();
 			
 			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
 			{
@@ -169,6 +191,17 @@ namespace StagPoint.EDF.Net
 
 		#region Private functions
 
+		private void updateSignalFrequency()
+		{
+			foreach( var loop in Signals )
+			{
+				if( loop is EdfStandardSignal signal )
+				{
+					signal.FrequencyInHz = signal.NumberOfSamplesPerRecord / Header.DurationOfDataRecord;
+				}
+			}
+		}
+
 		private int writeStandardSignal( BinaryWriter writer, EdfStandardSignal signal, int position )
 		{
 			int samplesWritten = 0;
@@ -206,6 +239,17 @@ namespace StagPoint.EDF.Net
 
 			if( storeTimekeeping )
 			{
+				// TODO: Timekeeping annotations must specify the event that started a DataRecord in files with no signals
+				//
+				//		https://www.edfplus.info/specs/edfplus.html#timekeeping
+				//
+				//		If the data records contain 'ordinary signals', then the starttime of each data record must be the starttime
+				//		of its signals. If there are no 'ordinary signals', then a non-empty annotation immediately following the
+				//		time-keeping annotation (in the same TAL) must specify what event defines the starttime of this data record.
+				//
+				//		For example, '+3456.7892020R-wave20 indicates that this data record starts at the occurrence of an R-wave,
+				//		which is 3456.789s after file start.
+				
 				long startPos = writer.BaseStream.Position;
 				
 				if( dataRecordStartTime >= 0 )
@@ -248,7 +292,7 @@ namespace StagPoint.EDF.Net
 					// Onset must be preceded by a '-' or '+' character
 					if( annotation.Onset >= 0 )
 					{
-						writer.Write( '+' );
+						writer.Write( (byte)'+' );
 					}
 
 					var onsetAsString = annotation.Onset.ToString( CultureInfo.InvariantCulture );
@@ -268,14 +312,22 @@ namespace StagPoint.EDF.Net
 				// Write delimiter
 				writer.Write( (byte)0x14 );
 
-				// Write Annotation, if present
-				if( !string.IsNullOrEmpty( annotation.Annotation ) )
+				// Write all annotations
+				if( annotation.AnnotationList.Count > 0 )
 				{
-					writer.Write( Encoding.UTF8.GetBytes( annotation.Annotation ) );
+					foreach( var description in annotation.AnnotationList )
+					{
+						writer.Write( Encoding.UTF8.GetBytes( description ) );
+						writer.Write( (byte)0x14 );
+					}
 				}
-				
+				else
+				{
+					// Write "Empty Annotation" delimiter
+					writer.Write( (byte)0x14 );
+				}
+
 				// Write terminator 
-				writer.Write( (byte)0x14 );
 				writer.Write( (byte)0x00 );
 				
 				// Keep track of the number of bytes written
@@ -321,20 +373,18 @@ namespace StagPoint.EDF.Net
 			{
 				if( signal is EdfStandardSignal standardSignal )
 				{
-					readSignal( reader, standardSignal );
+					readStandardSignal( reader, standardSignal );
 				}
 				else if( signal is EdfAnnotationSignal annotationSignal )
 				{
-					readSignal( reader, annotationSignal, isFirstAnnotationSignal );
+					readAnnotationSignal( reader, annotationSignal, isFirstAnnotationSignal );
 					isFirstAnnotationSignal = false;
 				}
 			}
 		}
 		
-		private void readSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation )
+		private void readAnnotationSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation )
 		{
-			// TODO: This code relies too heavily on the file format being correct, and is potentially fragile as a result.  
-
 			// Read NumberOfSamplesPerRecord 2-byte 'samples' into a local memory buffer, which we will parse
 			var length   = signal.NumberOfSamplesPerRecord * 2;
 			var buffer   = reader.ReadBytes( length );
@@ -349,7 +399,6 @@ namespace StagPoint.EDF.Net
 			{
 				double onset      = parseFloat( true, ref position );
 				double duration   = 0;
-				string descripton = string.Empty;
 
 				// If an annotation contains a duration, it will be preceded by 0x15
 				if( buffer[ position ] == 0x15 )
@@ -358,11 +407,23 @@ namespace StagPoint.EDF.Net
 					duration = parseFloat( false, ref position );
 				}
 
-				// If an annotation contains a description, it will be preceded by 0x15
+				var annotation = new EdfAnnotation
+				{
+					Onset      = onset,
+					Duration   = duration,
+				};
+
+				signal.Annotations.Add( annotation );
+
+				// If an annotation contains a description, it will be preceded by 0x14
 				// Note that there may be multiple consecutive descriptions for the same Onset and Duration, 
-				// and each should be added as a separate Annotation.
+				// and each should be treated as a separate Annotation.
+				//
 				// See the "Time-stamped Annotations Lists (TALs) in an 'EDF Annotations' Signal" section of the EDF+ spec
 				//		https://www.edfplus.info/specs/edfplus.html#tal
+				//
+				// This library will read in a TAL as multiple discrete EdfAnnotation instances, and does not currently
+				// provide a way for the user to create a TAL.
 				while( buffer[ position ] == 0x14 )
 				{
 					if( buffer[ ++position ] == 0x00 )
@@ -370,16 +431,8 @@ namespace StagPoint.EDF.Net
 						break;
 					}
 
-					descripton = parseString( ref position );
-
-					var annotation = new EdfAnnotation
-					{
-						Onset      = onset,
-						Duration   = duration,
-						Annotation = descripton
-					};
-
-					signal.Annotations.Add( annotation );
+					var description = parseString( ref position );
+					annotation.AnnotationList.Add( description );
 				}
 
 				// Consume the trailing 0x00 character. There may be multiple null characters present
@@ -444,7 +497,7 @@ namespace StagPoint.EDF.Net
 			}
 		}
 		
-		private void readSignal( BinaryReader reader, EdfStandardSignal signal )
+		private void readStandardSignal( BinaryReader reader, EdfStandardSignal signal )
 		{
 			for( int i = 0; i < signal.NumberOfSamplesPerRecord; i++ )
 			{
