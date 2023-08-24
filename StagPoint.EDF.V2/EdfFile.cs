@@ -241,14 +241,13 @@ namespace StagPoint.EDF.Net
 			{
 				// TODO: Timekeeping annotations must specify the event that started a DataRecord in files with no signals
 				//
-				//		https://www.edfplus.info/specs/edfplus.html#timekeeping
+				//	  https://www.edfplus.info/specs/edfplus.html#timekeeping
 				//
-				//		If the data records contain 'ordinary signals', then the starttime of each data record must be the starttime
-				//		of its signals. If there are no 'ordinary signals', then a non-empty annotation immediately following the
-				//		time-keeping annotation (in the same TAL) must specify what event defines the starttime of this data record.
+				//	  "If the data records contain 'ordinary signals', then the starttime of each data record must be the starttime
+				//	  of its signals. If there are no 'ordinary signals', then a non-empty annotation immediately following the
+				//	  time-keeping annotation (in the same TAL) must specify what event defines the starttime of this data record."
 				//
-				//		For example, '+3456.7892020R-wave20 indicates that this data record starts at the occurrence of an R-wave,
-				//		which is 3456.789s after file start.
+				//	  Worth noting that none of the EDF-compatible software I have seems to enforce/expect/support this?
 				
 				long startPos = writer.BaseStream.Position;
 				

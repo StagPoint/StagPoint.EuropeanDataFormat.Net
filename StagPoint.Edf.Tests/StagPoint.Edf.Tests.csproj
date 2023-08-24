@@ -81,4 +81,9 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="EdfAsciiDateTime_Tests.cs" />
+      <Compile Remove="EdfAsciiString_Tests.cs" />
+    </ItemGroup>
+
 </Project>

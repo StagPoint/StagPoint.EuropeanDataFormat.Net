@@ -39,9 +39,9 @@ namespace StagPoint.EDF.Net
 
 		#endregion
 
-		#region IEdfAsciiValue interface implementation
+		#region EdfAsciiField overrides
 
-		public override void ReadFrom( BinaryReader buffer )
+		internal override void ReadFrom( BinaryReader buffer )
 		{
 			// Dates are stored as dd.MM.yy and times as HH.mm.ss
 			var dateString = BufferHelper.ReadFromBuffer( buffer, 8 );
@@ -53,7 +53,7 @@ namespace StagPoint.EDF.Net
 				CultureInfo.InvariantCulture );
 		}
 
-		public override void WriteTo( BinaryWriter buffer )
+		internal override void WriteTo( BinaryWriter buffer )
 		{
 			BufferHelper.WriteToBuffer( buffer, Value.ToString( "dd.MM.yy" ), 8 );
 			BufferHelper.WriteToBuffer( buffer, Value.ToString( "HH.mm.ss" ), 8 );

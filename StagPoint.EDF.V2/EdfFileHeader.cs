@@ -22,7 +22,7 @@ namespace StagPoint.EDF.Net
 		/// in order: Patient Code, Sex, Birthdate, Patient Name. 
 		/// See <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">Additional specifications in EDF+</a>
 		/// </summary>
-		public EdfAsciiString PatientInfo { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiString PatientInfo { get; private set; } = new EdfAsciiString( 80 );
 
 		/// <summary>
 		/// The Local Recording Identification field. For EDF+ files, this will contain the following subfields
@@ -125,9 +125,28 @@ namespace StagPoint.EDF.Net
 
 		public EdfFileHeader() { }
 
+		/// <summary>
+		/// Reads an EDF file Header from the indicated file
+		/// </summary>
+		/// <param name="filename">The fully-qualified path to the EDF file</param>
+		public EdfFileHeader( string filename )
+		{
+			using( var file = File.OpenRead( filename ) )
+			{
+				using( var reader = new BinaryReader( file, Encoding.ASCII, true ) )
+				{
+					ReadFrom( reader );
+				}
+			}
+		}
+
+		/// <summary>
+		/// Reads an EDF file header from the provided Stream.
+		/// </summary>
+		/// <param name="source">A Stream (usually a FileStream) object containing the EdfHeader data to be loaded.</param>
 		public EdfFileHeader( Stream source )
 		{
-			using( var reader = new BinaryReader( source, Encoding.Default, true ) )
+			using( var reader = new BinaryReader( source, Encoding.ASCII, true ) )
 			{
 				ReadFrom( reader );
 			}
@@ -177,6 +196,11 @@ namespace StagPoint.EDF.Net
 			NumberOfDataRecords.ReadFrom( buffer );
 			DurationOfDataRecord.ReadFrom( buffer );
 			NumberOfSignals.ReadFrom( buffer );
+
+			if( EdfPatientIdentificationField.IsMatch( PatientInfo.Value ) )
+			{
+				PatientInfo = EdfPatientIdentificationField.Parse( PatientInfo.Value );
+			}
 
 			// Read the signal information
 			readListFromBuffer( buffer, Labels,               NumberOfSignals, () => new EdfAsciiString( 16 ) );

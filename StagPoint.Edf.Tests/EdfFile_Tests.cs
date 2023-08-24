@@ -45,9 +45,8 @@ public class EdfFile_Tests
 		try
 		{
 			file.WriteTo( tempFilename );
-			
-			var compareFile = new EdfFile();
-			compareFile.ReadFrom( tempFilename );
+
+			var compareFile = EdfFile.Open( tempFilename );
 			
 			Assert.AreEqual( file.Header.Reserved.Value,             compareFile.Header.Reserved );
 			Assert.AreEqual( file.Header.NumberOfDataRecords.Value,  compareFile.Header.NumberOfDataRecords );

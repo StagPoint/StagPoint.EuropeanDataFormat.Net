@@ -28,16 +28,16 @@ namespace StagPoint.EDF.Net
 
 		#endregion
 
-		#region IEdfAsciiValue interface implementation
+		#region EdfAsciiField overrides
 
-		public override void ReadFrom( BinaryReader buffer )
+		internal override void ReadFrom( BinaryReader buffer )
 		{
 			var temp = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
 
 			this.Value = int.Parse( temp );
 		}
 
-		public override void WriteTo( BinaryWriter buffer )
+		internal override void WriteTo( BinaryWriter buffer )
 		{
 			var stringVal = this.Value.ToString();
 

@@ -16,11 +16,7 @@ public class EdfFileHeader_Tests
 			Assert.Fail( "Test file missing" );
 		}
 
-		using var file   = File.OpenRead( filename );
-		using var reader = new BinaryReader( file );
-		var       header = new EdfFileHeader();
-		
-		header.ReadFrom( reader );
+		var header = new EdfFileHeader( filename );
 
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
@@ -29,6 +25,8 @@ public class EdfFileHeader_Tests
 		Assert.AreEqual( 1,                                                      header.NumberOfDataRecords );
 		Assert.AreEqual( 900.0,                                                  header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
+		
+		Assert.IsInstanceOfType( header.PatientInfo, typeof( EdfPatientIdentificationField ) );
 				
 		Assert.AreEqual( 2,               header.NumberOfSignals );
 		Assert.AreEqual( 2,               header.TransducerType.Count );
@@ -51,12 +49,8 @@ public class EdfFileHeader_Tests
 			Assert.Fail( "Test file missing" );
 		}
 
-		using var file   = File.OpenRead( filename );
-		using var reader = new BinaryReader( file );
-		var       header = new EdfFileHeader();
+		var header = new EdfFileHeader( filename );
 		
-		header.ReadFrom( reader );
-
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
 		Assert.AreEqual( 5376,                                                   header.HeaderRecordSize );
@@ -65,6 +59,8 @@ public class EdfFileHeader_Tests
 		Assert.AreEqual( 10.0,                                                   header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
 
+		Assert.IsInstanceOfType( header.PatientInfo, typeof( EdfPatientIdentificationField ) );
+				
 		Assert.AreEqual( 20, header.NumberOfSignals );
 		Assert.AreEqual( 20, header.TransducerType.Count );
 
@@ -220,6 +216,9 @@ public class EdfFileHeader_Tests
 	[TestMethod]
 	public void TestSignalLerp()
 	{
+		// Demonstrates the method used to encode Signal values, and the relationship between
+		// PhysicalMinimum, PhysicalMaximum and DigitalMinimum, DigitalMaximum
+		
 		var physMax = (double)short.MaxValue;
 		var physMin = (double)short.MinValue;
 		var digiMax = 255;

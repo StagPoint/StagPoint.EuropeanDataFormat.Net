@@ -11,7 +11,7 @@ namespace StagPoint.EDF.Net
 			this.FieldLength = fieldLength;
 		}
 		
-		public abstract void WriteTo( BinaryWriter  buffer );
-		public abstract void ReadFrom( BinaryReader buffer );
+		internal abstract void WriteTo( BinaryWriter  buffer );
+		internal abstract void ReadFrom( BinaryReader buffer );
 	}
 }

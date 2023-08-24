@@ -14,7 +14,7 @@ namespace StagPoint.EDF.Net
 	{
 		#region Public properties
 
-		public string Value
+		public virtual string Value
 		{
 			get { return _value; }
 			set
@@ -55,19 +55,19 @@ namespace StagPoint.EDF.Net
 
 		#endregion
 
-		#region IEdfAsciiValue interface implementation
+		#region EdfAsciiField overrides
 
-		public override void WriteTo( BinaryWriter buffer )
+		internal override void WriteTo( BinaryWriter buffer )
 		{
-			if( _value == null )
+			if( Value == null )
 			{
 				throw new NullReferenceException( $"The {nameof( Value )} property of the {nameof( EdfAsciiString )} object was set to NULL" );
 			}
 
-			BufferHelper.WriteToBuffer( buffer, _value, FieldLength );
+			BufferHelper.WriteToBuffer( buffer, Value, FieldLength );
 		}
 
-		public override void ReadFrom( BinaryReader buffer )
+		internal override void ReadFrom( BinaryReader buffer )
 		{
 			_value = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
 		}
@@ -83,7 +83,7 @@ namespace StagPoint.EDF.Net
 
 		public static implicit operator string( EdfAsciiString field )
 		{
-			return field._value;
+			return field.ToString();
 		}
 
 		#endregion
