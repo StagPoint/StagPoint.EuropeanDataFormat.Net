@@ -22,7 +22,7 @@ namespace StagPoint.EDF.Net
 		/// in order: Patient Code, Sex, Birthdate, Patient Name. 
 		/// See <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">Additional specifications in EDF+</a>
 		/// </summary>
-		public EdfAsciiString PatientInfo { get; private set; } = new EdfAsciiString( 80 );
+		public EdfAsciiString PatientIdentification { get; private set; } = new EdfAsciiString( 80 );
 
 		/// <summary>
 		/// The Local Recording Identification field. For EDF+ files, this will contain the following subfields
@@ -31,7 +31,7 @@ namespace StagPoint.EDF.Net
 		/// and a code specifying the used equipment.
 		/// See <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">Additional specifications in EDF+</a>
 		/// </summary>
-		public EdfAsciiString RecordingInfo { get; } = new EdfAsciiString( 80 );
+		public EdfAsciiString RecordingInfo { get; private set; } = new EdfAsciiString( 80 );
 
 		/// <summary>
 		/// The Start Date and Start Time of the recording.
@@ -162,7 +162,7 @@ namespace StagPoint.EDF.Net
 
 			// Write the fixed-size portion of the header
 			Version.WriteTo( buffer );
-			PatientInfo.WriteTo( buffer );
+			PatientIdentification.WriteTo( buffer );
 			RecordingInfo.WriteTo( buffer );
 			StartTime.WriteTo( buffer );
 			HeaderRecordSize.WriteTo( buffer );
@@ -188,7 +188,7 @@ namespace StagPoint.EDF.Net
 		{
 			// Read the fixed-size portion of the header
 			Version.ReadFrom( buffer );
-			PatientInfo.ReadFrom( buffer );
+			PatientIdentification.ReadFrom( buffer );
 			RecordingInfo.ReadFrom( buffer );
 			StartTime.ReadFrom( buffer );
 			HeaderRecordSize.ReadFrom( buffer );
@@ -197,9 +197,16 @@ namespace StagPoint.EDF.Net
 			DurationOfDataRecord.ReadFrom( buffer );
 			NumberOfSignals.ReadFrom( buffer );
 
-			if( EdfPatientIdentificationField.IsMatch( PatientInfo.Value ) )
+			// Automatically replace the PatientInfo field with an EdfPatientIdentificationField instance when appropriate. 
+			if( EdfPatientIdentificationField.IsMatch( PatientIdentification.Value ) )
 			{
-				PatientInfo = EdfPatientIdentificationField.Parse( PatientInfo.Value );
+				PatientIdentification = EdfPatientIdentificationField.Parse( PatientIdentification.Value );
+			}
+			
+			// Automatically replace the RecordingInfo field with an EdfRecordingIdentificationField instance when appropriate.
+			if( EdfRecordingIdentificationField.IsMatch( RecordingInfo.Value ) )
+			{
+				RecordingInfo = EdfRecordingIdentificationField.Parse( RecordingInfo.Value );
 			}
 
 			// Read the signal information

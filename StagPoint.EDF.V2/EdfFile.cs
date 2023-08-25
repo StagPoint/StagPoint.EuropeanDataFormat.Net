@@ -177,7 +177,7 @@ namespace StagPoint.EDF.Net
 				// We could easily make this a constant, but it isn't performance-critical and this is very easy to 
 				// read and understand.
 				file.Position = Header.Version.FieldLength +
-				                Header.PatientInfo.FieldLength +
+				                Header.PatientIdentification.FieldLength +
 				                Header.RecordingInfo.FieldLength +
 				                Header.StartTime.FieldLength +
 				                Header.HeaderRecordSize.FieldLength +

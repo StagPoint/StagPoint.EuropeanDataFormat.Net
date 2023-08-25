@@ -184,7 +184,7 @@ namespace StagPoint.EDF.Net
 			buffer.Append( string.IsNullOrEmpty( Sex ) ? "X" : Sex );
 			buffer.Append( ' ' );
 
-			buffer.Append( BirthDate?.ToString( "dd-MMM-yyyy" ) ?? "X" );
+			buffer.Append( BirthDate?.ToString( "dd-MMM-yyyy" ).ToUpperInvariant() ?? "X" );
 			buffer.Append( ' ' );
 
 			buffer.Append( string.IsNullOrEmpty( PatientName ) ? "X" : PatientName?.Replace( ' ', '_' ) );

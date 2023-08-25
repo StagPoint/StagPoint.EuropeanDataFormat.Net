@@ -18,7 +18,7 @@ public class EdfFileHeader_Tests
 
 		var header = new EdfFileHeader( filename );
 
-		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
+		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientIdentification );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
 		Assert.AreEqual( 768,                                                    header.HeaderRecordSize );
 		Assert.AreEqual( "EDF+C",                                                header.Reserved );
@@ -26,7 +26,7 @@ public class EdfFileHeader_Tests
 		Assert.AreEqual( 900.0,                                                  header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
 		
-		Assert.IsInstanceOfType( header.PatientInfo, typeof( EdfPatientIdentificationField ) );
+		Assert.IsInstanceOfType( header.PatientIdentification, typeof( EdfPatientIdentificationField ) );
 				
 		Assert.AreEqual( 2,               header.NumberOfSignals );
 		Assert.AreEqual( 2,               header.TransducerType.Count );
@@ -51,7 +51,7 @@ public class EdfFileHeader_Tests
 
 		var header = new EdfFileHeader( filename );
 		
-		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientInfo );
+		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientIdentification );
 		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
 		Assert.AreEqual( 5376,                                                   header.HeaderRecordSize );
 		Assert.AreEqual( "EDF+C",                                                header.Reserved );
@@ -59,7 +59,7 @@ public class EdfFileHeader_Tests
 		Assert.AreEqual( 10.0,                                                   header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
 
-		Assert.IsInstanceOfType( header.PatientInfo, typeof( EdfPatientIdentificationField ) );
+		Assert.IsInstanceOfType( header.PatientIdentification, typeof( EdfPatientIdentificationField ) );
 				
 		Assert.AreEqual( 20, header.NumberOfSignals );
 		Assert.AreEqual( 20, header.TransducerType.Count );
@@ -97,7 +97,7 @@ public class EdfFileHeader_Tests
 			var compareHeader = readHeaderFromFile( tempFileName );
 			
 			Assert.AreEqual( sourceHeader.Version.Value,              compareHeader.Version );
-			Assert.AreEqual( sourceHeader.PatientInfo.Value,          compareHeader.PatientInfo );
+			Assert.AreEqual( sourceHeader.PatientIdentification.Value,          compareHeader.PatientIdentification );
 			Assert.AreEqual( sourceHeader.RecordingInfo.Value,        compareHeader.RecordingInfo );
 			Assert.AreEqual( sourceHeader.StartTime.Value,            compareHeader.StartTime );
 			Assert.AreEqual( sourceHeader.HeaderRecordSize.Value,     compareHeader.HeaderRecordSize );
@@ -149,7 +149,7 @@ public class EdfFileHeader_Tests
 				var compareHeader = readHeaderFromFile( tempFileName );
 			
 				Assert.AreEqual( sourceHeader.Version.Value,              compareHeader.Version );
-				Assert.AreEqual( sourceHeader.PatientInfo.Value,          compareHeader.PatientInfo );
+				Assert.AreEqual( sourceHeader.PatientIdentification.Value,          compareHeader.PatientIdentification );
 				Assert.AreEqual( sourceHeader.RecordingInfo.Value,        compareHeader.RecordingInfo );
 				Assert.AreEqual( sourceHeader.StartTime.Value,            compareHeader.StartTime );
 				Assert.AreEqual( sourceHeader.HeaderRecordSize.Value,     compareHeader.HeaderRecordSize );
