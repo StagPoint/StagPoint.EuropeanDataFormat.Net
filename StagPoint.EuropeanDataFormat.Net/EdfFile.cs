@@ -86,7 +86,7 @@ namespace StagPoint.EDF.Net
 					throw new ArgumentException( $"Onset time {onset} overlaps an existing fragment", nameof( onset ) );
 				}
 
-				dataRecordIndex = last.DataRecordIndex + (int)Math.Floor( last.DataRecordDuration / Header.DurationOfDataRecord );
+				dataRecordIndex = last.DataRecordIndex + (int)Math.Ceiling( last.Duration / Header.DurationOfDataRecord );
 			}
 
 			var newFragment = new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord )
@@ -297,6 +297,7 @@ namespace StagPoint.EDF.Net
 		{
 			var bufferStartPosition = writer.BaseStream.Position;
 			int bytesWritten        = 0;
+			int bytesAllocated      = signal.NumberOfSamplesPerRecord * 2;
 
 			if( storeTimekeeping )
 			{
@@ -345,12 +346,18 @@ namespace StagPoint.EDF.Net
 
 				var annotationSize = annotation.GetSize();
 
+				// If there isn't enough space allocated for a large Annotation, then it cannot ever get written
+				if( annotationSize > bytesAllocated )
+				{
+					throw new Exception( $"Annotation too large: The amount of storage allocated for {signal.Label} ({bytesAllocated} bytes) is not large enough to hold an annotation that is {annotationSize} bytes." );
+				}
+
 				// An Annotation must not be split across DataRecord boundaries 
-				if( bytesWritten + annotationSize > signal.NumberOfSamplesPerRecord * 2 )
+				if( bytesWritten + annotationSize > bytesAllocated )
 				{
 					break;
 				}
-
+				
 				// Write Onset. 
 				{
 					// Onset must be preceded by a '-' or '+' character
@@ -401,7 +408,7 @@ namespace StagPoint.EDF.Net
 			}
 
 			// Pad out the rest of the allocated space with null characters 
-			while( bytesWritten < signal.NumberOfSamplesPerRecord * 2 )
+			while( bytesWritten < bytesAllocated )
 			{
 				writer.Write( (byte)0x00 );
 				bytesWritten += 1;
