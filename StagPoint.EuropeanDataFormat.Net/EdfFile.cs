@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+// ReSharper disable ConvertToUsingDeclaration
 
 namespace StagPoint.EDF.Net
 {
@@ -21,20 +23,29 @@ namespace StagPoint.EDF.Net
 		public EdfFileHeader Header { get; } = new EdfFileHeader();
 
 		/// <summary>
-		/// Returns the list of all Signals (both Standard signals and Annotation signals) stored in this file.
+		/// Returns the list of all Standard Signals stored in this file.
 		/// </summary>
-		public List<EdfSignalBase> Signals { get; } = new List<EdfSignalBase>();
+		public List<EdfStandardSignal> Signals { get; } = new List<EdfStandardSignal>();
 
 		/// <summary>
-		/// Returns TRUE if this file is an EDF+ file (makes use of EDF+ features)
+		/// Returns the list of all Annotation Signals stored in this file.
 		/// </summary>
-		public bool IsEdfPlusFile
+		public List<EdfAnnotationSignal> AnnotationSignals { get; } = new List<EdfAnnotationSignal>();
+		
+		/// <summary>
+		/// For EDF+D files (EDF+ Discontinuous), this list will contain the start time and size in seconds of
+		/// each discontinuous section of signal samples.
+		/// <see cref="EdfDataFragment"/>
+		/// </summary>
+		public List<EdfDataFragment> Fragments { get; } = new List<EdfDataFragment>();
+
+		/// <summary>
+		/// Returns the type of file format used (EDF, EDF+C, or EDF+C)
+		/// </summary>
+		public EdfFileType FileType
 		{
-			get
-			{
-				return Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Continuous ) ||
-				       Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Discontinuous );
-			}
+			get => Header.FileType;
+			set { Header.FileType = value; }
 		}
 		
 		#endregion
@@ -77,15 +88,21 @@ namespace StagPoint.EDF.Net
 		{
 			using( var reader = new BinaryReader( file, Encoding.ASCII ) )
 			{
+				Fragments.Clear();
+				
 				Header.ReadFrom( reader );
-				Header.AllocateSignals( this.Signals );
+				Header.AllocateSignals( this.Signals, this.AnnotationSignals );
 
 				// Ensure that EdfStandardSignal.FrequencyInHz is updated.
 				updateSignalFrequency();
+
+				// Only want to perform this work once
+				var fileType = FileType;
 			
+				// Read in all Data Records stored. 
 				for( int i = 0; i < Header.NumberOfDataRecords; i++ )
 				{
-					readDataRecord( reader, i );
+					readDataRecord( reader, i, fileType );
 				}
 			}
 		}
@@ -110,15 +127,18 @@ namespace StagPoint.EDF.Net
 		public void WriteTo( Stream file )
 		{
 			// EDF+ files must have an Annotations Signal, for timekeeping if nothing else 
-			var isEdfPlusFile = IsEdfPlusFile;
+			var fileType      = FileType;
+			var isEdfPlusFile = fileType != EdfFileType.EDF;
 			if( isEdfPlusFile )
 			{
-				if( !Signals.Any( x => x is EdfAnnotationSignal ) )
+				if( AnnotationSignals.Count == 0 )
 				{
 					var defaultAnnotationSignal = new EdfAnnotationSignal();
+					
+					// Ensure that enough space is allocated for storing a Timekeeping Annotation
 					defaultAnnotationSignal.NumberOfSamplesPerRecord.Value = 8;
 
-					Signals.Add( defaultAnnotationSignal );
+					AnnotationSignals.Add( defaultAnnotationSignal );
 				}
 			}
 			
@@ -131,13 +151,14 @@ namespace StagPoint.EDF.Net
 				Header.NumberOfDataRecords.Value = 0;
 				
 				// Update the header fields that store Signal information 
-				Header.UpdateSignalFields( Signals );
+				Header.UpdateSignalFields( Signals, AnnotationSignals );
 				
 				// Write the header information 
 				Header.WriteTo( writer );
                 
 				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
-				var counters = new int[ Signals.Count ];
+				var counters           = new int[ Signals.Count ];
+				var annotationCounters = new int[ AnnotationSignals.Count ];
 
 				var dataRecordStartTime = 0.0;
 
@@ -151,25 +172,35 @@ namespace StagPoint.EDF.Net
 					
 					for( int i = 0; i < Signals.Count; i++ )
 					{
-						if( Signals[ i ] is EdfStandardSignal standardSignal )
-						{
-							counters[ i ]   += writeStandardSignal( writer, standardSignal, counters[ i ] );
-							continueWriting |= counters[ i ] < standardSignal.Samples.Count;
-						}
-						else if( Signals[ i ] is EdfAnnotationSignal annotationSignal )
-						{
-							if( !isEdfPlusFile )
-							{
-								throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
-							}
-							
-							counters[ i ] += writeAnnotationSignal( writer, annotationSignal, counters[ i ], writeTimekeepingAnnotation, dataRecordStartTime );
-							
-							continueWriting            |= counters[ i ] < annotationSignal.Annotations.Count;
-							writeTimekeepingAnnotation =  false;
-						}
+						var standardSignal = Signals[ i ];
+						
+						counters[ i ]   += writeStandardSignal( writer, standardSignal, counters[ i ] );
+						continueWriting |= counters[ i ] < standardSignal.Samples.Count;
 					}
 
+					for( int i = 0; i < AnnotationSignals.Count; i++ )
+					{
+						var annotationSignal = AnnotationSignals[ i ];
+						
+						if( !isEdfPlusFile )
+						{
+							throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
+						}
+
+						annotationCounters[ i ] += writeAnnotationSignal(
+							writer,
+							annotationSignal,
+							annotationCounters[ i ],
+							writeTimekeepingAnnotation,
+							dataRecordStartTime
+						);
+
+						continueWriting            |= annotationCounters[ i ] < annotationSignal.NumberOfSamplesPerRecord;
+						writeTimekeepingAnnotation =  false;
+					}
+
+					// Keep track of the expected start time of the next Data Record 
+					// This allows us to know when the next data record is not contiguous.
 					dataRecordStartTime += Header.DurationOfDataRecord;
 				}
 				
@@ -178,7 +209,7 @@ namespace StagPoint.EDF.Net
 				// read and understand.
 				file.Position = Header.Version.FieldLength +
 				                Header.PatientIdentification.FieldLength +
-				                Header.RecordingInfo.FieldLength +
+				                Header.RecordingIdentification.FieldLength +
 				                Header.StartTime.FieldLength +
 				                Header.HeaderRecordSize.FieldLength +
 				                Header.Reserved.FieldLength;
@@ -193,12 +224,9 @@ namespace StagPoint.EDF.Net
 
 		private void updateSignalFrequency()
 		{
-			foreach( var loop in Signals )
+			foreach( var signal in Signals )
 			{
-				if( loop is EdfStandardSignal signal )
-				{
-					signal.FrequencyInHz = signal.NumberOfSamplesPerRecord / Header.DurationOfDataRecord;
-				}
+				signal.FrequencyInHz = signal.NumberOfSamplesPerRecord / Header.DurationOfDataRecord;
 			}
 		}
 
@@ -255,14 +283,18 @@ namespace StagPoint.EDF.Net
 				{
 					writer.Write( (byte)'+' );
 				}
-
+				
 				var startTimeAsString = dataRecordStartTime.ToString( CultureInfo.InvariantCulture );
 				writer.Write( Encoding.ASCII.GetBytes( startTimeAsString ) );
+				
+				// Note that the specification calls the Timekeeping Annotation a TAL, implying that one or more text
+				// annotations can be included, but at least two of the pieces of software that I have which read EDF
+				// files refuse to read such files and consider them invalid. 
 					
 				writer.Write( (byte)0x14 );
 				writer.Write( (byte)0x14 );
 				writer.Write( (byte)0x00 );
-
+				
 				bytesWritten = (int)(writer.BaseStream.Position - startPos);
 			}
 				
@@ -345,44 +377,98 @@ namespace StagPoint.EDF.Net
 			return signal.NumberOfSamplesPerRecord;
 		}
 		
-		private void readDataRecord( BinaryReader reader, int index )
+		private void readDataRecord( BinaryReader reader, int index, EdfFileType fileType )
 		{
 			// By default a Data Record's start time is sequential, with each one starting immediately after
 			// the previous one ended. The only exception is when reading EDF+D (EDF+ Discontinuous) files.
-			var recordStartTime = Header.StartTime.Value.AddSeconds( Header.DurationOfDataRecord * index );
+			var expectedStartTime = Header.DurationOfDataRecord * index;
 			
-			// If the file contains discontinuous data, we need to read the timekeeping annotation of each
-			// data record and use that value instead.
-			// See "Time Keeping of Data Records" in the EDF+ specification - https://www.edfplus.info/specs/edfplus.html#timekeeping
-			if( Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Discontinuous ) )
-			{
-				// TODO: Finish EDF+D implementation 
-				throw new NotImplementedException();
-			}
-			else if( Header.Reserved.Value.Equals( StandardTexts.FileType.EDF_Plus_Continuous ) )
-			{
-				// NOTE: An EDF+C file may also contain timekeeping annotations in each data record, but 
-				// those should always match the record start time calculated above.
-				// TODO: Should we assert that EDF+C timekeeping annotations always match calculated Data Record start time?
-			}
+			// The first annotation of the first 'EDF Annotations' signal in each data record is empty, but its timestamp specifies
+			// how many seconds after the file start time that data record starts.
+			var    isFirstAnnotationSignal = true;
+			double recordedStartTime       = 0;
 
-			var isFirstAnnotationSignal = true;
+			// // If the file contains discontinuous data, we need to read the timekeeping annotation of each
+			// // data record and use that value instead.
+			// // See "Time Keeping of Data Records" in the EDF+ specification - https://www.edfplus.info/specs/edfplus.html#timekeeping
+			// if( fileType == EdfFileType.EDF_Plus_Discontinuous )
+			// {
+			// 	// TODO: Finish EDF+D implementation 
+			// 	throw new NotImplementedException();
+			// }
+			// else if( fileType == EdfFileType.EDF_Plus )
+			// {
+			// 	// NOTE: An EDF+C file may also contain timekeeping annotations in each data record, but 
+			// 	// those should always match the record start time calculated above.
+			// 	// TODO: Should we assert that EDF+C timekeeping annotations always match calculated Data Record start time?
+			// }
 
 			foreach( var signal in Signals )
 			{
-				if( signal is EdfStandardSignal standardSignal )
+				readStandardSignal( reader, signal );
+			}
+			
+			foreach( var signal in AnnotationSignals )
+			{
+				readAnnotationSignal( reader, signal, isFirstAnnotationSignal, ref recordedStartTime );
+
+				// Check timekeeping annotation?
+				if( !isFirstAnnotationSignal || Signals.Count == 0 )
 				{
-					readStandardSignal( reader, standardSignal );
+					continue;
 				}
-				else if( signal is EdfAnnotationSignal annotationSignal )
+				
+				if( recordedStartTime < expectedStartTime )
 				{
-					readAnnotationSignal( reader, annotationSignal, isFirstAnnotationSignal );
-					isFirstAnnotationSignal = false;
+					throw new Exception( $"Data Records are out of order: {recordedStartTime} was encountered before {expectedStartTime}" );
 				}
+					
+				// If the timekeeping matches what is expected then extend the time of the last timekeeping annotation 
+				if( recordedStartTime - expectedStartTime < 0.001 )
+				{
+					if( Fragments.Count == 0 )
+					{
+						// Add a new fragment when necessary
+						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
+						{
+							Onset    = expectedStartTime,
+							Duration = Header.DurationOfDataRecord
+						} );
+					}
+					else
+					{
+						// Otherwise just extend the last fragment's duration 
+						Fragments.Last().Duration += Header.DurationOfDataRecord;
+					}
+				}
+				else
+				{
+					if( fileType == EdfFileType.EDF_Plus_Discontinuous )
+					{
+						// Start a new fragment 
+						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
+						{
+							Onset    = recordedStartTime,
+							Duration = Header.DurationOfDataRecord
+						} );
+					}
+					else
+					{
+						// Disregard if there are no Standard Signals or if DurationOfDataRecord == 0
+						// This is because Annotation-only files will often have a Duration of zero, and 
+						// since there are no signals, timing is irrelevant. 
+						if( Header.DurationOfDataRecord > 0 && Signals.Count > 0 )
+						{
+							throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {index}), but File Type is not EDF+D" );
+						}
+					}
+				}
+					
+				isFirstAnnotationSignal = false;
 			}
 		}
 		
-		private void readAnnotationSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation )
+		private void readAnnotationSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation, ref double startTime )
 		{
 			// Read NumberOfSamplesPerRecord 2-byte 'samples' into a local memory buffer, which we will parse
 			var length   = signal.NumberOfSamplesPerRecord * 2;
@@ -391,7 +477,10 @@ namespace StagPoint.EDF.Net
 
 			if( expectTimekeepingAnnotation )
 			{
-				signal.Annotations.Add( readTimekeepingAnnotation( ref position ) );
+				var timeKeeping = readTimekeepingAnnotation( ref position );
+				startTime = timeKeeping.Onset;
+				
+				signal.Annotations.Add( timeKeeping );
 			}
 
 			while( position < length && buffer[ position ] > 0x00 )
@@ -447,9 +536,9 @@ namespace StagPoint.EDF.Net
 			{
 				var startPosition = pos;
 
-				double onset = parseFloat( true, ref position );
+				double onset = parseFloat( true, ref pos );
 
-				if( buffer[ position++ ] != 0x14 || buffer[ position++ ] != 0x14 || buffer[ position++ ] != 0x00 )
+				if( buffer[ pos++ ] != 0x14 || buffer[ pos++ ] != 0x14 || buffer[ pos++ ] != 0x00 )
 				{
 					throw new FormatException( $"Missing or invalid timekeeping annotation at position {startPosition}" );
 				}
@@ -511,6 +600,64 @@ namespace StagPoint.EDF.Net
 			}
 		}
 		
+		#endregion 
+	}
+	
+	/// <summary>
+	/// Represents the start time (in seconds from the file start time) and Duration (in seconds)
+	/// of a section of Signal samples stored in the file. 
+	/// </summary>
+	public class EdfDataFragment
+	{
+		#region Public properties 
+			
+		/// <summary>
+		/// The number of seconds after the file start time when the section begins 
+		/// </summary>
+		public double Onset = 0;
+			
+		/// <summary>
+		/// The number of seconds included in this section 
+		/// </summary>
+		public double Duration = 0;
+
+		/// <summary>
+		/// The index of the Data Record that this EdfDataFragment starts on
+		/// </summary>
+		internal int DataRecordIndex = 0;
+
+		/// <summary>
+		/// The duration, in seconds, of the source file's Data Record
+		/// </summary>
+		internal double DataRecordDuration = 0;
+			
+		#endregion
+		
+		#region Constructor
+
+		private EdfDataFragment()
+		{
+			throw new NotImplementedException();
+		}
+
+		internal EdfDataFragment( int dataRecordIndex, double dataRecordDuration )
+		{
+			DataRecordIndex  = dataRecordIndex;
+			DataRecordDuration = dataRecordDuration;
+		}
+		
+		#endregion 
+
+		#region Base class overrides
+
+		/// <summary>
+		/// Returns a string representation of this object
+		/// </summary>
+		public override string ToString()
+		{
+			return $"Start: {Onset:F2}, Duration: {Duration:F2}";
+		}
+			
 		#endregion 
 	}
 }

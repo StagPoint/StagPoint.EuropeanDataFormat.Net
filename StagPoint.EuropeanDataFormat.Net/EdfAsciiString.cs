@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System;
 using System.IO;
 using System.Text;
 

@@ -1,4 +1,6 @@
-﻿// ReSharper disable IdentifierTypo
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+// ReSharper disable IdentifierTypo
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace StagPoint.EDF.Net

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 

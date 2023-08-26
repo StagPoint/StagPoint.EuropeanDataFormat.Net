@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -10,14 +12,14 @@ namespace StagPoint.EDF.Net
 	/// Stores Recording Identification information according to the
 	/// <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">EDF+ specification</a>
 	/// </summary>
-	public class EdfRecordingIdentificationField : EdfAsciiString
+	public class EdfRecordingInfo : EdfAsciiString
 	{
 		#region Public properties
 
 		/// <summary>
 		/// The date on which the recording was startedS
 		/// </summary>
-		public DateTime? StartDate { get; set; }
+		public DateTime StartDate { get; set; }
 
 		/// <summary>
 		/// The hospital administration code of the investigation, i.e. EEG number or PSG number
@@ -50,7 +52,7 @@ namespace StagPoint.EDF.Net
 			{
 				if( !TryParse( value, this ) )
 				{
-					throw new FieldAccessException( $"Please do not use the {nameof( EdfRecordingIdentificationField )}.{nameof( Value )} property directly. Use the subfield properties to assign values." );
+					throw new FormatException();
 				}
 			}
 		}
@@ -60,9 +62,9 @@ namespace StagPoint.EDF.Net
 		#region Constructors
 
 		/// <summary>
-		/// Initializes a new instance of the EdfRecordingIdentificationField class
+		/// Initializes a new instance of the EdfRecordingInfo class
 		/// </summary>
-		public EdfRecordingIdentificationField( int fieldLength ) : base( fieldLength )
+		public EdfRecordingInfo( int fieldLength ) : base( fieldLength )
 		{
 			if( fieldLength != 80 )
 			{
@@ -71,9 +73,9 @@ namespace StagPoint.EDF.Net
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the EdfRecordingIdentificationField class
+		/// Initializes a new instance of the EdfRecordingInfo class
 		/// </summary>
-		public EdfRecordingIdentificationField( int fieldLength, string value ) : base( fieldLength, value )
+		public EdfRecordingInfo( int fieldLength, string value ) : base( fieldLength, value )
 		{
 			if( fieldLength != 80 )
 			{
@@ -98,11 +100,11 @@ namespace StagPoint.EDF.Net
 		}
 
 		/// <summary>
-		/// Attempts to parse subfield information from a text buffer. Returns an EdfRecordingIdentificationField if successful.
+		/// Attempts to parse subfield information from a text buffer. Returns an EdfRecordingInfo if successful.
 		/// </summary>
-		internal static EdfRecordingIdentificationField Parse( string buffer, bool throwOnFormatInvalid = true )
+		internal static EdfRecordingInfo Parse( string buffer, bool throwOnFormatInvalid = true )
 		{
-			EdfRecordingIdentificationField result = new EdfRecordingIdentificationField( 80 );
+			EdfRecordingInfo result = new EdfRecordingInfo( 80 );
 			
 			if( TryParse( buffer, result ) )
 			{
@@ -111,16 +113,16 @@ namespace StagPoint.EDF.Net
 
 			if( throwOnFormatInvalid )
 			{
-				throw new FormatException( $"The value '{buffer}' does not appear to be a valid format for {nameof( EdfRecordingIdentificationField )}" );
+				throw new FormatException( $"The value '{buffer}' does not appear to be a valid format for {nameof( EdfRecordingInfo )}" );
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Attempts to parse subfield information from a text buffer. Returns an EdfRecordingIdentificationField if successful.
+		/// Attempts to parse subfield information from a text buffer. Returns an EdfRecordingInfo if successful.
 		/// </summary>
-		private static bool TryParse( string buffer, EdfRecordingIdentificationField field )
+		private static bool TryParse( string buffer, EdfRecordingInfo field )
 		{
 			var parts = buffer.Split( ' ' );
 			if( parts.Length < 5 )
@@ -133,12 +135,16 @@ namespace StagPoint.EDF.Net
 				return false;
 			}
 
-			DateTime? startDate  = null;
-			string    code       = parts[ 2 ].Replace( '_', ' ' );
-			string    technician = parts[ 3 ].Replace( '_', ' ' );
-			string    equipment  = parts[ 4 ].Replace( '_', ' ' );
+			DateTime startDate  = default;
+			string   code       = parts[ 2 ].Replace( '_', ' ' );
+			string   technician = parts[ 3 ].Replace( '_', ' ' );
+			string   equipment  = parts[ 4 ].Replace( '_', ' ' );
 
-			if( String.Compare( parts[ 1 ], "X", StringComparison.OrdinalIgnoreCase ) != 0 )
+			if( String.Compare( parts[ 1 ], "X", StringComparison.OrdinalIgnoreCase ) == 0 )
+			{
+				return false;
+			}
+			else
 			{
 				if( !DateTime.TryParse( parts[ 1 ], out DateTime parsedDate ) )
 				{
@@ -184,7 +190,7 @@ namespace StagPoint.EDF.Net
 			var buffer = new StringBuilder();
 
 			buffer.Append( "Startdate " );
-			buffer.Append( StartDate?.ToString( "dd-MMM-yyyy" ).ToUpperInvariant() ?? "X" );
+			buffer.Append( StartDate.ToString( "dd-MMM-yyyy" ).ToUpperInvariant() ?? "X" );
 			buffer.Append( ' ' );
 
 			buffer.Append( string.IsNullOrEmpty( Code ) ? "X" : Code?.Replace( ' ', '_' ) );

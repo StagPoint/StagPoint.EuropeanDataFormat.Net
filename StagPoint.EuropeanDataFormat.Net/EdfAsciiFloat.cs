@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System.Globalization;
 using System.IO;
 
 namespace StagPoint.EDF.Net

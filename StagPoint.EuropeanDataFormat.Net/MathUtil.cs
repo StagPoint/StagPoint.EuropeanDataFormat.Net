@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System.Runtime.CompilerServices;
 
 namespace StagPoint.EDF.Net
 {

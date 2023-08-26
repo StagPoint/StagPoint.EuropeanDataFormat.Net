@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2409aad3-c297-4d4f-8c39-915070c617dc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EDF.V2/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EuropeanDataFormat.Net/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EuropeanDataFormat.Net/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EuropeanDataFormat.Net/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EuropeanDataFormat.Net/.idea/indexLayout.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EuropeanDataFormat.Net/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.StagPoint.EurpeanDataFormat.Net/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StagPoint.EDF.V2/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StagPoint.EDF.V2/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StagPoint.EDF.V2/.idea/indexLayout.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.StagPoint.EDF.V2/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2.sln" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/BufferHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/BufferHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAnnotationSignal.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAnnotationSignal.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAsciiDateTime.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAsciiDateTime.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAsciiField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAsciiField.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAsciiFloat.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAsciiFloat.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAsciiInteger.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAsciiInteger.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfAsciiString.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfAsciiString.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfFile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfFile.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfFileHeader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfFileHeader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfPatientIdentificationField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfPatientIdentificationField.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfRecordingIdentificationField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfRecordingIdentificationField.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfSignalBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfSignalBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfSignalHeader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfSignalHeader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/EdfStandardSignal.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/EdfStandardSignal.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/MathUtil.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/MathUtil.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/StagPoint.EDF.V2.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/StagPoint.EuropeanDataFormat.Net.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.EDF.V2/StandardTexts.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.EuropeanDataFormat.Net/StandardTexts.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.Edf.Tests/EdfFileHeader_Tests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.Edf.Tests/EdfFileHeader_Tests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/StagPoint.Edf.Tests/StagPoint.Edf.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/StagPoint.Edf.Tests/StagPoint.Edf.Tests.csproj" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;StagPoint&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="0024a92b-3b0b-4f1a-b902-69bed16b1940" />
+        <option name="url" value="https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4472e9d6a19b4c92bcc9a80bd60ca17d26da8/df/4a8b4749/MethodInfoExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d08b5425b14a4a129bfa8e447a81395e12190/b8/348dc9d3/Assert.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/e84932cb409d42269fc72ad26f20391b532bb8/ba/ad6638ed/Encoding.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1681edfb7d22e92762a47f7ad24b9c3e49499c53750a9dbeedb20bd20615b/Double.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/17e38fc279b3572621a1a0737741283fe2bdc3149cd2f3b3fd79191674166ecd/DateTime.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1befb6a4e843da4ebf9659aaafe776ca95b78202d44ccdc656cede38d887020/Directory.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/347edd8917ba0afc5f515d414efcf08665c5c2c2ac768bef44a59f8817e4f/Decoder.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/4393b886a286b7656c92b4aee5d9759858ee3ca3f858a1b518be26bea0c7/String.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/43cc16b3296346bb464c8c72b5aad95f1acae8c4028c66eed56901e1fb559ff/Stream.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/459b5cba13fc65ba87d9a46ab276a2a9b3c1125ef6bac57b7ca4b7ac70c0ad4c/TargetInvocationException.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/685740393f59fd572ad94c27112a77e0c086f741e99c9c979bf92113ae/Encoding.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6879c9ed20391a5ccfea363be5964fbcfe4f1dfde9558aa84b36df6b6ec92c6/List.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/789e27cba9588f1571c230f9598f299a91666d8b5347a0338dc840e88a742980/BinaryWriter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7cb7424fd293afbd058d95c82aaf7b12b3cf57037576ecc8fd333ccfad7ad/Encoding.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/9a6b1457cbcf17db31a383ba49ef9bcc786cf3ef77146d997eee499b27a46d/Object.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/b2e2569a599c90377c1a97627ad8774b6db45b50adadbf7ef077d29896d719/RuntimeHelpers.CoreCLR.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c06d831657dda47fa5e0f5b6297389f84c75ee92195a2848ffe65873625db9b/FieldAccessException.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c6297beeca6fad3aecfca3f6ada68851427ec42476a72c6e9892ee791304062/ASCIIEncoding.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c6c22e897169c8836caca1070e0f86ae0c748f520e9eb8fa0c23d34387799d5/BinaryReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/df71358f7b7337a1eee3a65abe6d678dd9a065e256b8cc3fd44a2949754/Object.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/eb7c16f494241108ae3ccb66dd57dac1e1ce4d3a261b2d6a6019147bd7f70/BinaryReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/Projects/StagPoint.EDF.V2/StagPoint.EDF.V2/EdfFileHeader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/StagPoint.EDF.V2/obj/Debug/net47/StagPoint.EDF.V2.GlobalUsings.g.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/StagPoint.EDF.V2/obj/Debug/netcoreapp3.1/StagPoint.EDF.V2.GlobalUsings.g.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/StagPoint.Edf.Tests/EdfAsciiDateTime_Tests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/StagPoint.Edf.Tests/EdfAsciiString_Tests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/Projects/StagPoint.EDF.V2/StagPoint.Edf.Tests/EdfFileHeader_Tests.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2UE5B7lCUBz0Hw7wdMTcNgul9XW" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "copyright.profiles",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "PLAIN_TEXT"
+    ],
+    "rider.external.source.directories": [
+      "C:\\Users\\takua\\AppData\\Roaming\\JetBrains\\Rider2023.2\\resharper-host\\DecompilerCache",
+      "C:\\Users\\takua\\AppData\\Roaming\\JetBrains\\Rider2023.2\\resharper-host\\SourcesCache",
+      "C:\\Users\\takua\\AppData\\Local\\Symbols\\src"
+    ]
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2409aad3-c297-4d4f-8c39-915070c617dc" name="Changes" comment="" />
+      <created>1692491760384</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1692491760384</updated>
+      <workItem from="1692491761450" duration="106886000" />
+      <workItem from="1692924098813" duration="479000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="ed5c7758-1466-49e6-98cc-fb6044a0efe5" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="ed5c7758-1466-49e6-98cc-fb6044a0efe5">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:D:/Projects/StagPoint.EDF.V2/StagPoint.EDF.V2" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/StagPoint.EDF.V2/EdfFileHeader.cs</url>
+          <line>208</line>
+          <properties documentPath="D:\Projects\StagPoint.EDF.V2\StagPoint.EDF.V2\EdfFileHeader.cs" initialLine="208" containingFunctionPresentation="Method 'ReadFrom'" />
+          <option name="timeStamp" value="52" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/StagPoint.EDF.V2/EdfRecordingIdentificationField.cs</url>
+          <line>124</line>
+          <properties documentPath="D:\Projects\StagPoint.EDF.V2\StagPoint.EDF.V2\EdfRecordingIdentificationField.cs" initialLine="124" containingFunctionPresentation="Method 'TryParse'" />
+          <option name="timeStamp" value="53" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/StagPoint.Edf.Tests/EdfFileHeader_Tests.cs</url>
+          <line>18</line>
+          <properties documentPath="D:\Projects\StagPoint.EDF.V2\StagPoint.Edf.Tests\EdfFileHeader_Tests.cs" initialLine="18" containingFunctionPresentation="Method 'ReadKnownOximetryFileHeader'">
+            <startOffsets>
+              <option value="382" />
+            </startOffsets>
+            <endOffsets>
+              <option value="425" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="54" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="Type#StagPoint.EDF.Net.EdfAnnotationSignal" memberName="Annotations" />
+      </pinned-members>
+    </pin-to-top-manager>
+  </component>
+</project>

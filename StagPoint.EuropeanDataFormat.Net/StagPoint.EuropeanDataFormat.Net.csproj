@@ -1,0 +1,39 @@
+<!--
+  - Copyright (c) 2023. Jonah Stagner (StagPoint)
+  - All rights reserved.
+  -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>1.0.0</Version>
+        <Title>StagPoint.EuropeanDataFormat.Net V1.0</Title>
+        <Authors>StagPoint</Authors>
+        <Description>Library for reading and writing European Data Format files, written entirely in C#</Description>
+        <Copyright>Copyright 2023 Jonah Stagner (StagPoint)</Copyright>
+        <Company>StagPoint</Company>
+        <Product>StagPoint.EuropeanDataFormat.Net</Product>
+        <TargetFrameworks>net6.0;net7.0;netcoreapp3.1;netstandard2.0;net47;net48;netstandard1.7;net46</TargetFrameworks>
+        <AssemblyName>StagPoint.EuropeanDataFormat.Net</AssemblyName>
+        <RootNamespace>StagPoint.EDF.Net</RootNamespace>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <PackageProjectUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net</RepositoryUrl>
+        <RepositoryType>GitHub</RepositoryType>
+        <PackageTags>EDF, EDF+, European Data Format, File Format, Medical File Format</PackageTags>
+        <PackageIcon>edf_edfplus_icon.png</PackageIcon>
+        <PackageReleaseNotes>First public release.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="edf_edfplus_icon.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </AdditionalFiles>
+        <None Include="edf_edfplus_icon.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
+</Project>

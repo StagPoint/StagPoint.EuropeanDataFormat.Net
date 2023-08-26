@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -10,7 +12,7 @@ namespace StagPoint.EDF.Net
 	/// Stores Patient Identification information according to the
 	/// <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">EDF+ specification</a>
 	/// </summary>
-	public class EdfPatientIdentificationField : EdfAsciiString
+	public class EdfPatientInfo : EdfAsciiString
 	{
 		#region Public properties
 
@@ -51,7 +53,7 @@ namespace StagPoint.EDF.Net
 			{
 				if( !TryParse( value, this ) )
 				{
-					throw new FieldAccessException( $"Please do not use the {nameof( EdfPatientIdentificationField )}.{nameof( Value )} property directly. Use the subfield properties to assign values." );
+					throw new FormatException();
 				}
 			}
 		}
@@ -61,9 +63,9 @@ namespace StagPoint.EDF.Net
 		#region Constructors
 
 		/// <summary>
-		/// Initializes a new instance of the EdfPatientIdentificationField class
+		/// Initializes a new instance of the EdfPatientInfo class
 		/// </summary>
-		public EdfPatientIdentificationField( int fieldLength ) : base( fieldLength )
+		public EdfPatientInfo( int fieldLength ) : base( fieldLength )
 		{
 			if( fieldLength != 80 )
 			{
@@ -72,9 +74,9 @@ namespace StagPoint.EDF.Net
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the EdfPatientIdentificationField class
+		/// Initializes a new instance of the EdfPatientInfo class
 		/// </summary>
-		public EdfPatientIdentificationField( int fieldLength, string value ) : base( fieldLength, value )
+		public EdfPatientInfo( int fieldLength, string value ) : base( fieldLength, value )
 		{
 			if( fieldLength != 80 )
 			{
@@ -99,11 +101,11 @@ namespace StagPoint.EDF.Net
 		}
 
 		/// <summary>
-		/// Attempts to parse subfield information from a text buffer. Returns an EdfPatientIdentificationField if successful.
+		/// Attempts to parse subfield information from a text buffer. Returns an EdfPatientInfo if successful.
 		/// </summary>
-		internal static EdfPatientIdentificationField Parse( string buffer, bool throwOnFormatInvalid = true )
+		internal static EdfPatientInfo Parse( string buffer, bool throwOnFormatInvalid = true )
 		{
-			EdfPatientIdentificationField result = new EdfPatientIdentificationField( 80 );
+			EdfPatientInfo result = new EdfPatientInfo( 80 );
 			
 			if( TryParse( buffer, result ) )
 			{
@@ -112,16 +114,16 @@ namespace StagPoint.EDF.Net
 
 			if( throwOnFormatInvalid )
 			{
-				throw new FormatException( $"The value '{buffer}' does not appear to be a valid format for {nameof( EdfPatientIdentificationField )}" );
+				throw new FormatException( $"The value '{buffer}' does not appear to be a valid format for {nameof( EdfPatientInfo )}" );
 			}
 
 			return null;
 		}
 
 		/// <summary>
-		/// Attempts to parse subfield information from a text buffer. Returns an EdfPatientIdentificationField if successful.
+		/// Attempts to parse subfield information from a text buffer. Returns an EdfPatientInfo if successful.
 		/// </summary>
-		private static bool TryParse( string buffer, EdfPatientIdentificationField field )
+		private static bool TryParse( string buffer, EdfPatientInfo field )
 		{
 			var parts = buffer.Split( ' ' );
 			if( parts.Length < 4 )

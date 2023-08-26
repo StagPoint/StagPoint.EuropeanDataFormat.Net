@@ -1,3 +1,8 @@
+<!--
+  - Copyright (c) 2023. Jonah Stagner (StagPoint)
+  - All rights reserved.
+  -->
+
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
@@ -17,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StagPoint.EDF.V2\StagPoint.EDF.V2.csproj" />
+      <ProjectReference Include="..\StagPoint.EuropeanDataFormat.Net\StagPoint.EuropeanDataFormat.Net.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -77,6 +82,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Test Files\SC4772G0-PSG.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\Discontinuous1.edf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

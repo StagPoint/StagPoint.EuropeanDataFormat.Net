@@ -19,14 +19,15 @@ public class EdfFileHeader_Tests
 		var header = new EdfFileHeader( filename );
 
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientIdentification );
-		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
+		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingIdentification );
 		Assert.AreEqual( 768,                                                    header.HeaderRecordSize );
 		Assert.AreEqual( "EDF+C",                                                header.Reserved );
 		Assert.AreEqual( 1,                                                      header.NumberOfDataRecords );
 		Assert.AreEqual( 900.0,                                                  header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
 		
-		Assert.IsInstanceOfType( header.PatientIdentification, typeof( EdfPatientIdentificationField ) );
+		Assert.IsInstanceOfType( header.PatientIdentification,   typeof( EdfPatientInfo ) );
+		Assert.IsInstanceOfType( header.RecordingIdentification, typeof( EdfRecordingInfo ) );
 				
 		Assert.AreEqual( 2,               header.NumberOfSignals );
 		Assert.AreEqual( 2,               header.TransducerType.Count );
@@ -52,15 +53,16 @@ public class EdfFileHeader_Tests
 		var header = new EdfFileHeader( filename );
 		
 		Assert.AreEqual( "X F X Female57yrs",                                    header.PatientIdentification );
-		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingInfo );
+		Assert.AreEqual( "Startdate 07-MAR-2009 X Tech:X Somnoscreen_Plus_1500", header.RecordingIdentification );
 		Assert.AreEqual( 5376,                                                   header.HeaderRecordSize );
 		Assert.AreEqual( "EDF+C",                                                header.Reserved );
 		Assert.AreEqual( 90,                                                     header.NumberOfDataRecords );
 		Assert.AreEqual( 10.0,                                                   header.DurationOfDataRecord );
 		Assert.AreEqual( new DateTime( 2009, 03, 07 ),                           header.StartTime );
 
-		Assert.IsInstanceOfType( header.PatientIdentification, typeof( EdfPatientIdentificationField ) );
-				
+		Assert.IsInstanceOfType( header.PatientIdentification,   typeof( EdfPatientInfo ) );
+		Assert.IsInstanceOfType( header.RecordingIdentification, typeof( EdfRecordingInfo ) );
+
 		Assert.AreEqual( 20, header.NumberOfSignals );
 		Assert.AreEqual( 20, header.TransducerType.Count );
 
@@ -80,7 +82,7 @@ public class EdfFileHeader_Tests
 	[TestMethod]
 	public void RoundTripHeaderFile()
 	{
-		var tempFileName = Path.GetTempFileName();
+		var tempFileName = GetTempFilename();
 
 		try
 		{
@@ -98,7 +100,7 @@ public class EdfFileHeader_Tests
 			
 			Assert.AreEqual( sourceHeader.Version.Value,              compareHeader.Version );
 			Assert.AreEqual( sourceHeader.PatientIdentification.Value,          compareHeader.PatientIdentification );
-			Assert.AreEqual( sourceHeader.RecordingInfo.Value,        compareHeader.RecordingInfo );
+			Assert.AreEqual( sourceHeader.RecordingIdentification.Value,        compareHeader.RecordingIdentification );
 			Assert.AreEqual( sourceHeader.StartTime.Value,            compareHeader.StartTime );
 			Assert.AreEqual( sourceHeader.HeaderRecordSize.Value,     compareHeader.HeaderRecordSize );
 			Assert.AreEqual( sourceHeader.Reserved.Value,             compareHeader.Reserved );
@@ -115,7 +117,7 @@ public class EdfFileHeader_Tests
 	[TestMethod]
 	public void RoundTripAllHeaderFiles()
 	{
-		var tempFileName = Path.GetTempFileName();
+		var tempFileName = GetTempFilename();
 
 		var currentFolder = Path.Combine( Environment.CurrentDirectory, "Test Files" );
 		Assert.IsTrue( Directory.Exists( currentFolder ) );
@@ -150,7 +152,7 @@ public class EdfFileHeader_Tests
 			
 				Assert.AreEqual( sourceHeader.Version.Value,              compareHeader.Version );
 				Assert.AreEqual( sourceHeader.PatientIdentification.Value,          compareHeader.PatientIdentification );
-				Assert.AreEqual( sourceHeader.RecordingInfo.Value,        compareHeader.RecordingInfo );
+				Assert.AreEqual( sourceHeader.RecordingIdentification.Value,        compareHeader.RecordingIdentification );
 				Assert.AreEqual( sourceHeader.StartTime.Value,            compareHeader.StartTime );
 				Assert.AreEqual( sourceHeader.HeaderRecordSize.Value,     compareHeader.HeaderRecordSize );
 				Assert.AreEqual( sourceHeader.Reserved.Value,             compareHeader.Reserved );
@@ -289,5 +291,10 @@ public class EdfFileHeader_Tests
 		return new EdfFileHeader( sourceFile );
 	}
 	
+	private static string GetTempFilename()
+	{
+		return Path.Combine( Path.GetTempPath(), $"{Guid.NewGuid()}.edf" );
+	}
+
 	#endregion 
 }

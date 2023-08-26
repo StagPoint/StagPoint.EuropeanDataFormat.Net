@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System.IO;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 

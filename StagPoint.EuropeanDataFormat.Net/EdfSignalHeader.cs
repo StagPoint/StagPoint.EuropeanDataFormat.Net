@@ -1,4 +1,6 @@
-﻿namespace StagPoint.EDF.Net
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+namespace StagPoint.EDF.Net
 {
 	internal class EdfSignalHeader
 	{

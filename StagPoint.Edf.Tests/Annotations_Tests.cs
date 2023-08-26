@@ -15,9 +15,10 @@ public class Annotations_Tests
 		}
 
 		var file = EdfFile.Open( filename );
+		
+		Assert.IsTrue( file.AnnotationSignals.Count > 0 );
 
-		var signal  = file.Signals[ 0 ] as EdfAnnotationSignal;
-		Assert.IsNotNull( signal, "No Annotations Signal found in file" );
+		var signal  = file.AnnotationSignals[ 0 ];
 		
 		var listTAL = signal.Annotations.Where( x => x.AnnotationList.Count > 1 ).ToList();
 		Assert.IsTrue( listTAL is { Count: > 0 }, "Did not find any Annotation Signals with TAL annotations in file" );
@@ -38,8 +39,8 @@ public class Annotations_Tests
 		}
 
 		var file = EdfFile.Open( filename );
-		
-		var tempFilename = Path.ChangeExtension( Path.GetTempFileName(), ".edf" );
+
+		var tempFilename = GetTempFilename();
 
 		try
 		{
@@ -47,7 +48,9 @@ public class Annotations_Tests
 			
 			var compareFile = EdfFile.Open( tempFilename );
 			
-			var signal = compareFile.Signals[ 0 ] as EdfAnnotationSignal;
+			Assert.IsTrue( compareFile.AnnotationSignals.Count > 0 );
+			
+			var signal = compareFile.AnnotationSignals[ 0 ];
 			Assert.IsNotNull( signal, "No Annotations Signal found in file" );
 		
 			var listTAL = signal.Annotations.Where( x => x.AnnotationList.Count > 1 ).ToList();
@@ -62,6 +65,11 @@ public class Annotations_Tests
 		{
 			File.Delete( tempFilename );
 		}
+	}
+	
+	private static string GetTempFilename()
+	{
+		return Path.Combine( Path.GetTempPath(), $"{Guid.NewGuid()}.edf" );
 	}
 }
 

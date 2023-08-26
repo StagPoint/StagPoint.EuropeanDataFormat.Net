@@ -1,16 +1,19 @@
-﻿using System;
+﻿// Copyright (C) 2023 Jonah Stagner (StagPoint). All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
 namespace StagPoint.EDF.Net
 {
+	/// <summary>
+	/// The header record identifies the patient and recording and specifies the technical characteristics of the recorded signals.
+	/// </summary>
 	public class EdfFileHeader
 	{
-		#region Public properties
+		#region Stored Header fields 
 
 		/// <summary>
 		/// The EDF version number. Should always be 0.
@@ -31,7 +34,7 @@ namespace StagPoint.EDF.Net
 		/// and a code specifying the used equipment.
 		/// See <a href="https://www.edfplus.info/specs/edfplus.html#additionalspecs">Additional specifications in EDF+</a>
 		/// </summary>
-		public EdfAsciiString RecordingInfo { get; private set; } = new EdfAsciiString( 80 );
+		public EdfAsciiString RecordingIdentification { get; private set; } = new EdfAsciiString( 80 );
 
 		/// <summary>
 		/// The Start Date and Start Time of the recording.
@@ -120,9 +123,53 @@ namespace StagPoint.EDF.Net
 		public List<EdfAsciiString> SignalReserved { get; private set; } = new List<EdfAsciiString>();
 
 		#endregion
+		
+		#region Public properties not stored in the file
+
+		/// <summary>
+		/// Gets/Sets which EDF file format is used to store the file 
+		/// </summary>
+		public EdfFileType FileType
+		{
+			get
+			{
+				// ReSharper disable once ConvertIfStatementToSwitchStatement
+				if( string.IsNullOrEmpty( Reserved.Value ) )
+					return EdfFileType.EDF;
+				else if( Reserved.Value == StandardTexts.FileType.EDF_Plus_Continuous )
+					return EdfFileType.EDF_Plus;
+				else if( Reserved.Value == StandardTexts.FileType.EDF_Plus_Discontinuous )
+					return EdfFileType.EDF_Plus_Discontinuous;
+				else
+					throw new Exception( $"Unrecognized file type '{Reserved.Value}'" );
+			}
+			set
+			{
+				// ReSharper disable once ConvertSwitchStatementToSwitchExpression
+				switch( FileType )
+				{
+					case EdfFileType.EDF:
+						Reserved.Value = StandardTexts.FileType.EDF;
+						break;
+					case EdfFileType.EDF_Plus:
+						Reserved.Value = StandardTexts.FileType.EDF_Plus_Continuous;
+						break;
+					case EdfFileType.EDF_Plus_Discontinuous:
+						Reserved.Value = StandardTexts.FileType.EDF_Plus_Discontinuous;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException( nameof(value), $"Argument is not a valid {nameof(EdfFileType)} value" );
+				}
+			}
+		}
+		
+		#endregion 
 
 		#region Constructors
 
+		/// <summary>
+		/// Initializes a new instance of the EdfFileHeader class
+		/// </summary>
 		public EdfFileHeader() { }
 
 		/// <summary>
@@ -156,6 +203,9 @@ namespace StagPoint.EDF.Net
 
 		#region Public Read/Write functions
 
+		/// <summary>
+		/// Writes all EDF File Header information to the provided Stream
+		/// </summary>
 		public void WriteTo( BinaryWriter buffer )
 		{
 			HeaderRecordSize.Value = calculateHeaderRecordSize();
@@ -163,7 +213,7 @@ namespace StagPoint.EDF.Net
 			// Write the fixed-size portion of the header
 			Version.WriteTo( buffer );
 			PatientIdentification.WriteTo( buffer );
-			RecordingInfo.WriteTo( buffer );
+			RecordingIdentification.WriteTo( buffer );
 			StartTime.WriteTo( buffer );
 			HeaderRecordSize.WriteTo( buffer );
 			Reserved.WriteTo( buffer );
@@ -184,12 +234,15 @@ namespace StagPoint.EDF.Net
 			writeListToBuffer( buffer, SignalReserved );
 		}
 
+		/// <summary>
+		/// Reads all EDF File Header information from the provided stream
+		/// </summary>
 		public void ReadFrom( BinaryReader buffer )
 		{
 			// Read the fixed-size portion of the header
 			Version.ReadFrom( buffer );
 			PatientIdentification.ReadFrom( buffer );
-			RecordingInfo.ReadFrom( buffer );
+			RecordingIdentification.ReadFrom( buffer );
 			StartTime.ReadFrom( buffer );
 			HeaderRecordSize.ReadFrom( buffer );
 			Reserved.ReadFrom( buffer );
@@ -197,16 +250,16 @@ namespace StagPoint.EDF.Net
 			DurationOfDataRecord.ReadFrom( buffer );
 			NumberOfSignals.ReadFrom( buffer );
 
-			// Automatically replace the PatientInfo field with an EdfPatientIdentificationField instance when appropriate. 
-			if( EdfPatientIdentificationField.IsMatch( PatientIdentification.Value ) )
+			// Automatically replace the PatientInfo field with an EdfPatientInfo instance when appropriate. 
+			if( EdfPatientInfo.IsMatch( PatientIdentification.Value ) )
 			{
-				PatientIdentification = EdfPatientIdentificationField.Parse( PatientIdentification.Value );
+				PatientIdentification = EdfPatientInfo.Parse( PatientIdentification.Value );
 			}
 			
-			// Automatically replace the RecordingInfo field with an EdfRecordingIdentificationField instance when appropriate.
-			if( EdfRecordingIdentificationField.IsMatch( RecordingInfo.Value ) )
+			// Automatically replace the RecordingInfo field with an EdfRecordingInfo instance when appropriate.
+			if( EdfRecordingInfo.IsMatch( RecordingIdentification.Value ) )
 			{
-				RecordingInfo = EdfRecordingIdentificationField.Parse( RecordingInfo.Value );
+				RecordingIdentification = EdfRecordingInfo.Parse( RecordingIdentification.Value );
 			}
 
 			// Read the signal information
@@ -226,23 +279,23 @@ namespace StagPoint.EDF.Net
 		
 		#region Internal functions used by the EdfFile class 
 		
-		internal void UpdateSignalFields( List<EdfSignalBase> signals )
+		internal void UpdateSignalFields( List<EdfStandardSignal> signals, List<EdfAnnotationSignal> annotations )
 		{
-			NumberOfSignals.Value = signals.Count;
+			NumberOfSignals.Value = signals.Count + annotations.Count;
 
-			Labels               = signals.Select( x => x.Label ).ToList();
-			TransducerType       = signals.Select( x => x.TransducerType ).ToList();
-			PhysicalDimension    = signals.Select( x => x.PhysicalDimension ).ToList();
-			PhysicalMinimum      = signals.Select( x => x.PhysicalMinimum ).ToList();
-			PhysicalMaximum      = signals.Select( x => x.PhysicalMaximum ).ToList();
-			DigitalMinimum       = signals.Select( x => x.DigitalMinimum ).ToList();
-			DigitalMaximum       = signals.Select( x => x.DigitalMaximum ).ToList();
-			Prefiltering         = signals.Select( x => x.Prefiltering ).ToList();
-			SamplesPerDataRecord = signals.Select( x => x.NumberOfSamplesPerRecord ).ToList();
-			SignalReserved       = signals.Select( x => x.Reserved ).ToList();
+			Labels               = signals.Select( x => x.Label ).Concat( annotations.Select( x => x.Label ) ).ToList();
+			TransducerType       = signals.Select( x => x.TransducerType ).Concat( annotations.Select( x => x.TransducerType ) ).ToList();
+			PhysicalDimension    = signals.Select( x => x.PhysicalDimension ).Concat( annotations.Select( x => x.PhysicalDimension ) ).ToList();
+			PhysicalMinimum      = signals.Select( x => x.PhysicalMinimum ).Concat( annotations.Select( x => x.PhysicalMinimum ) ).ToList();
+			PhysicalMaximum      = signals.Select( x => x.PhysicalMaximum ).Concat( annotations.Select( x => x.PhysicalMaximum ) ).ToList();
+			DigitalMinimum       = signals.Select( x => x.DigitalMinimum ).Concat( annotations.Select( x => x.DigitalMinimum ) ).ToList();
+			DigitalMaximum       = signals.Select( x => x.DigitalMaximum ).Concat( annotations.Select( x => x.DigitalMaximum ) ).ToList();
+			Prefiltering         = signals.Select( x => x.Prefiltering ).Concat( annotations.Select( x => x.Prefiltering ) ).ToList();
+			SamplesPerDataRecord = signals.Select( x => x.NumberOfSamplesPerRecord ).Concat( annotations.Select( x => x.NumberOfSamplesPerRecord ) ).ToList();
+			SignalReserved       = signals.Select( x => x.Reserved ).Concat( annotations.Select( x => x.Reserved ) ).ToList();
 		}
 
-		internal void AllocateSignals( List<EdfSignalBase> signals )
+		internal void AllocateSignals( List<EdfStandardSignal> signals, List<EdfAnnotationSignal> annotations )
 		{
 			signals.Clear();
 
@@ -265,7 +318,7 @@ namespace StagPoint.EDF.Net
 
 				if( header.Label.Value.Equals( StandardTexts.SignalType.EdfAnnotations ) )
 				{
-					signals.Add( new EdfAnnotationSignal( header ) );
+					annotations.Add( new EdfAnnotationSignal( header ) );
 				}
 				else
 				{
@@ -316,5 +369,24 @@ namespace StagPoint.EDF.Net
 		}
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Represents the EDF file type
+	/// </summary>
+	public enum EdfFileType
+	{
+		/// <summary>
+		/// Standard (legacy) EDF file. No annotations or EDF+ extensions are supported. 
+		/// </summary>
+		EDF,
+		/// <summary>
+		/// EDF+ file. Annotations and EDF+ extensions are supported. Data Records are stored contiguously.
+		/// </summary>
+		EDF_Plus,
+		/// <summary>
+		/// EDF+ file. Annotations and EDF+ extensions are supported. Data Records may not be stored contiguously.
+		/// </summary>
+		EDF_Plus_Discontinuous
 	}
 }
