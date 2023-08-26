@@ -32,6 +32,49 @@ public class Annotations_Tests
 	}
 
 	[TestMethod]
+	public void RoundTripAllAnnotationsS()
+	{
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations.edf" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		var file = EdfFile.Open( filename );
+
+		var tempFilename = GetTempFilename();
+
+		try
+		{
+			file.WriteTo( tempFilename );
+			
+			var compareFile = EdfFile.Open( tempFilename );
+
+			Assert.AreEqual( file.AnnotationSignals.Count,                  compareFile.AnnotationSignals.Count );
+
+			var lhsList = file.AnnotationSignals[ 0 ].Annotations;
+			var rhsList = compareFile.AnnotationSignals[ 0 ].Annotations;
+
+			lhsList.RemoveAll( x => x.IsTimeKeepingAnnotation );
+			rhsList.RemoveAll( x => x.IsTimeKeepingAnnotation );
+			
+			Assert.AreEqual( lhsList.Count, rhsList.Count );
+
+			for( int i = 0; i < lhsList.Count; i++ )
+			{
+				var lhs = lhsList[ i ];
+				var rhs = rhsList[ i ];
+
+				Assert.AreEqual( lhs.ToString(), rhs.ToString() );
+			}
+		}
+		finally
+		{
+			File.Delete( tempFilename );
+		}
+	}
+
+	[TestMethod]
 	public void RoundTripTimestampedAnnotationsLists()
 	{
 		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations.edf" );
@@ -125,6 +168,53 @@ public class Annotations_Tests
 		finally
 		{
 			File.Delete( tempFilename );
+		}
+	}
+
+	[TestMethod]
+	public void TooManyAnnotations()
+	{
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations_and_signals.edf" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		// Load a file with an existing Annotations Signal, which we will fill with way too many annotations to 
+		// store in the 600 Data Records allocated for standards Signals. 
+		var file = EdfFile.Open( filename );
+		var signal = file.AnnotationSignals[ 0 ];
+		
+		// Remove all existing annotations
+		signal.Annotations.Clear();
+
+		for( int i = 0; i < file.Header.NumberOfDataRecords * 5; i++ )
+		{
+			signal.Annotations.Add( new EdfAnnotation()
+			{
+				Onset      = i + 1,
+				Annotation = "Now is the time for all good men to come to the aid of their country."
+			} );
+		}
+		
+		var tempFilename = GetTempFilename();
+
+		try
+		{
+			// Attempt to save the file with the too many annotations
+			file.WriteTo( tempFilename );
+
+			// If no exception was thrown, this test has failed
+			Assert.Fail( "Expected an exception to be thrown." );
+		}
+		catch( Exception e )
+		{
+			// We're expecting the exception message to explain that there was not enough space allocated to annotations  
+			Assert.IsTrue( e.Message.Contains( "Not enough space", StringComparison.OrdinalIgnoreCase ) );
+		}
+		finally
+		{
+			//File.Delete( tempFilename );
 		}
 	}
 	

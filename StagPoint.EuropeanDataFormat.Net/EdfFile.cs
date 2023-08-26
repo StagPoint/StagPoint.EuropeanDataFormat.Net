@@ -156,9 +156,12 @@ namespace StagPoint.EDF.Net
 		/// to which you want to save the file information.</param>
 		public void WriteTo( Stream file )
 		{
-			// EDF+ files must have an Annotations Signal, for timekeeping if nothing else 
 			var fileType      = FileType;
 			var isEdfPlusFile = fileType != EdfFileType.EDF;
+			
+			// From the specification: Even if no annotations are to be kept, an EDF+ file must contain at least
+			// one 'EDF Annotations' signal in order to specify the starttime of each datarecord (see section 2.2.4).
+			//    https://www.edfplus.info/specs/edfplus.html#annotationssignal
 			if( isEdfPlusFile )
 			{
 				if( AnnotationSignals.Count == 0 )
@@ -175,9 +178,18 @@ namespace StagPoint.EDF.Net
 			// Ensure that EdfStandardSignal.FrequencyInHz is updated.
 			updateSignalFrequency();
 			
+			// Remove all Timekeeping Notifications from all Annotation Streams. Timekeeping notifications
+			// get rewritten anew each time a file is saved, so don't retain stale ones.
+			foreach( var signal in AnnotationSignals )
+			{
+				signal.Annotations.RemoveAll( x => x.IsTimeKeepingAnnotation );
+			}
+			
 			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
 			{
-				// We don't know the number of DataRecords written yet. This value will be overwritten below.  
+				// We don't know the number of DataRecords written yet. This value will be overwritten below. 
+				// It's easy enough to calculate for files that contain only ordinary signals, but not for 
+				// files which contain only annotations.
 				Header.NumberOfDataRecords.Value = 0;
 				
 				// Update the header fields that store Signal information 
@@ -192,17 +204,21 @@ namespace StagPoint.EDF.Net
 
 				var dataRecordStartTime = 0.0;
 
-				bool continueWriting = true;
-				while( continueWriting )
+				bool continueWritingSignals     = true;
+				bool continueWritingAnnotations = true;
+
+				while( continueWritingSignals || continueWritingAnnotations )
 				{
-					continueWriting = false;
+					// Assume that we are done unless proven otherwise (allows us to use boolean "OR" operation below)
+					continueWritingSignals     = false;
+					continueWritingAnnotations = false;
 					
 					for( int i = 0; i < Signals.Count; i++ )
 					{
 						var standardSignal = Signals[ i ];
 						
-						counters[ i ]   += writeStandardSignal( writer, standardSignal, counters[ i ] );
-						continueWriting |= counters[ i ] < standardSignal.Samples.Count;
+						counters[ i ]          += writeStandardSignal( writer, standardSignal, counters[ i ] );
+						continueWritingSignals |= counters[ i ] < standardSignal.Samples.Count;
 					}
 
 					for( int i = 0; i < AnnotationSignals.Count; i++ )
@@ -220,15 +236,25 @@ namespace StagPoint.EDF.Net
 
 						var annotationSignal = AnnotationSignals[ i ];
 						
-						annotationCounters[ i ] += writeAnnotationSignal(
+						annotationCounters[ i ] = writeAnnotationSignal(
 							writer,
 							annotationSignal,
 							annotationCounters[ i ],
 							i == 0, // Only the first AnnotationSignal stores timekeeping annotations 
 							dataRecordStartTime
 						);
+						
+						continueWritingAnnotations |= annotationCounters[ i ] < annotationSignal.Annotations.Count;
+					}
 
-						continueWriting |= annotationCounters[ i ] < annotationSignal.NumberOfSamplesPerRecord;
+					// If there are ordinary signals present in the file (this is not an "Annotations Only" file), and
+					// all signal data has been written to the file but there is still annotation data remaining to be
+					// written, raise an exception. 
+					// Otherwise, what would happen is that additional Data Records would need to be be written that
+					// have no signal data to store, and that situation is not adequately covered by the Specification. 
+					if( Signals.Count > 0 && !continueWritingSignals && continueWritingAnnotations )
+					{
+						throw new Exception( "Not enough space has been allocated for Annotations to be stored in the same number of Data Records as ordinary Signals" );
 					}
 
 					// Keep track of the expected start time of the next Data Record 
@@ -240,14 +266,20 @@ namespace StagPoint.EDF.Net
 				// Patch up the NumberOfDataRecords by seeking to the position of the field and overwriting the value. 
 				// We could easily make this a constant, but it isn't performance-critical and this is very easy to 
 				// read and understand.
-				file.Position = Header.Version.FieldLength +
-				                Header.PatientIdentification.FieldLength +
-				                Header.RecordingIdentification.FieldLength +
-				                Header.StartTime.FieldLength +
-				                Header.HeaderRecordSize.FieldLength +
-				                Header.Reserved.FieldLength;
+				{
+					var savedPosition = file.Position;
 
-				Header.NumberOfDataRecords.WriteTo( writer );
+					file.Position = Header.Version.FieldLength +
+					                Header.PatientIdentification.FieldLength +
+					                Header.RecordingIdentification.FieldLength +
+					                Header.StartTime.FieldLength +
+					                Header.HeaderRecordSize.FieldLength +
+					                Header.Reserved.FieldLength;
+
+					Header.NumberOfDataRecords.WriteTo( writer );
+
+					file.Position = savedPosition;
+				}
 			}
 		}
 		
@@ -301,7 +333,7 @@ namespace StagPoint.EDF.Net
 
 			if( storeTimekeeping )
 			{
-				// TODO: Timekeeping annotations must specify the event that started a DataRecord in files with no signals
+				// TODO: Timekeeping annotations must specify the event that started a DataRecord in "Annotations Only" files
 				//
 				//	  https://www.edfplus.info/specs/edfplus.html#timekeeping
 				//
@@ -318,6 +350,10 @@ namespace StagPoint.EDF.Net
 					writer.Write( (byte)'+' );
 				}
 				
+				// From the specification: Never use any digit grouping symbol in numbers.
+				// Never use a comma "," for a for a decimal separator.
+				// When a decimal separator is required, use a dot (".").
+				//    https://www.edfplus.info/specs/edfplus.html#additionalspecs:~:text=Never%20use%20any%20digit%20grouping%20symbol
 				var startTimeAsString = dataRecordStartTime.ToString( CultureInfo.InvariantCulture );
 				writer.Write( Encoding.ASCII.GetBytes( startTimeAsString ) );
 				
@@ -335,30 +371,27 @@ namespace StagPoint.EDF.Net
 			while( position < signal.Annotations.Count )
 			{
 				var annotation = signal.Annotations[ position ];
-				
-				// Ignore any Timekeeping Annotations in the Signal, as these were read from file previously and 
-				// may no longer match the file. 
-				if( annotation.IsTimeKeepingAnnotation )
-				{
-					++position;
-					continue;
-				}
-
 				var annotationSize = annotation.GetSize();
 
-				// If there isn't enough space allocated for a large Annotation, then it cannot ever get written
+				// If there isn't enough space allocated for a large Annotation, then it cannot ever get written.
+				// This is not something that can be worked around automatically, since Annotations may not be
+				// split across Data Records.
 				if( annotationSize > bytesAllocated )
 				{
 					throw new Exception( $"Annotation too large: The amount of storage allocated for {signal.Label} ({bytesAllocated} bytes) is not large enough to hold an annotation that is {annotationSize} bytes." );
 				}
 
-				// An Annotation must not be split across DataRecord boundaries 
+				// An Annotation must not be split across DataRecord boundaries. If there isn't enough space left, then
+				// we are done writing Annotations for the current Data Record.
 				if( bytesWritten + annotationSize > bytesAllocated )
 				{
 					break;
 				}
+
+				// Track all annotations written, so the calling code knows when to stop
+				++position;
 				
-				// Write Onset. 
+				// Write Onset
 				{
 					// Onset must be preceded by a '-' or '+' character
 					if( annotation.Onset >= 0 )
@@ -376,6 +409,7 @@ namespace StagPoint.EDF.Net
 					// Write delimiter
 					writer.Write( (byte)0x15 );
 
+					// Write duration as an ASCII string. 
 					var durationAsString = annotation.Duration.Value.ToString( CultureInfo.InvariantCulture );
 					writer.Write( Encoding.ASCII.GetBytes( durationAsString ) );
 				}
@@ -403,8 +437,6 @@ namespace StagPoint.EDF.Net
 				
 				// Keep track of the number of bytes written
 				bytesWritten = (int)(writer.BaseStream.Position - bufferStartPosition);
-
-				++position;
 			}
 
 			// Pad out the rest of the allocated space with null characters 
@@ -414,7 +446,7 @@ namespace StagPoint.EDF.Net
 				bytesWritten += 1;
 			}
 
-			return signal.NumberOfSamplesPerRecord;
+			return position;
 		}
 		
 		private void readDataRecord( BinaryReader reader, int index, EdfFileType fileType )

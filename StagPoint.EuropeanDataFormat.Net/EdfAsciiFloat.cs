@@ -44,6 +44,10 @@ namespace StagPoint.EDF.Net
 
 		internal override void WriteTo( BinaryWriter buffer )
 		{
+			// From the specification: Never use any digit grouping symbol in numbers.
+			// Never use a comma "," for a for a decimal separator.
+			// When a decimal separator is required, use a dot (".").
+			//    https://www.edfplus.info/specs/edfplus.html#additionalspecs:~:text=Never%20use%20any%20digit%20grouping%20symbol
 			var stringVal = this.Value.ToString( STRING_FORMAT, CultureInfo.InvariantCulture );
 
 			BufferHelper.WriteToBuffer( buffer, stringVal, FieldLength );
