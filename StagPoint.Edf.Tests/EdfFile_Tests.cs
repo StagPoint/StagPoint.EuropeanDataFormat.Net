@@ -83,12 +83,9 @@ public class EdfFile_Tests
 
 		for( int i = 0; i < file.Signals.Count; i++ )
 		{
-			var loop = file.Signals[ i ];
+			var signal = file.Signals[ i ];
 			
-			if( loop is EdfStandardSignal signal )
-			{
-				Assert.AreEqual( correctFrequencies[ i ], signal.FrequencyInHz );
-			}
+			Assert.AreEqual( correctFrequencies[ i ], signal.FrequencyInHz );
 		}
 	}
 
@@ -108,7 +105,7 @@ public class EdfFile_Tests
 		Assert.AreEqual( 1.0,                                file.Fragments[ 0 ].Duration );
 		Assert.AreEqual( 1.5,                                file.Fragments[ 1 ].Onset - file.Fragments[ 0 ].Onset );
 
-		var signal     = file.Signals[ 0 ] as EdfStandardSignal;
+		var signal = file.Signals[ 0 ];
 		Assert.IsNotNull( signal, "Failed to find a signal to verify" );
 		
 		var fragment   = signal.GetFragment( file.Fragments[ 1 ] );
@@ -120,59 +117,52 @@ public class EdfFile_Tests
 	}
 
 	[TestMethod]
-	public void AutoCalculateDataRecordSize()
+	public void WriteDiscontinuousFile()
 	{
-		var signalFrequencies = new double[]
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "Discontinuous1.edf" );
+		if( !File.Exists( filename ) )
 		{
-			128, 128, 128, 128, 128, 128, 128, 128, 128, 
-			128, 128, 128, 128, 128, 128, 128, 32, 32, 4,
-			0.25,
-		};
-
-		var lcm = LCM( signalFrequencies );
-
-		foreach( var number in signalFrequencies )
-		{
-			Assert.AreEqual( 0, lcm % number, 0.1 );
+			Assert.Fail( "Test file missing" );
 		}
-	}
-	
-	static long LCM( params double[] numbers)
-	{
-		return (long)numbers.Aggregate( lcm );
 		
-		double lcm(double a, double b)
-		{
-			var longA = (long)Math.Floor( a * 100 );
-			var longB = (long)Math.Floor( b * 100 );
-			
-			var result = Math.Abs(longA * longB) / gcd(longA, longB);
+		var tempFilename = GetTempFilename();
 
-			return Math.Floor( result / 100.0 );
-		}
-
-		long gcd( long a, long b )
+		try
 		{
-			while( true )
+			var file = EdfFile.Open( filename );
+			file.WriteTo( tempFilename );
+
+			var compare = EdfFile.Open( tempFilename );
+
+			Assert.AreEqual( EdfFileType.EDF_Plus_Discontinuous, compare.FileType );
+			Assert.AreEqual( file.Header.NumberOfDataRecords,    compare.Fragments.Count );
+			Assert.AreEqual( file.Fragments.Count,               compare.Fragments.Count );
+
+			for( int i = 0; i < file.Fragments.Count; i++ )
 			{
-				if( a < b )
-				{
-					(a, b) = (b, a);
-					continue;
-				}
+				var lhs = file.Fragments[ i ];
+				var rhs = compare.Fragments[ i ];
 
-				if( b == 0 )
-				{
-					return a;
-				}
-
-				var a1 = a;
-				a = b;
-				b = a1 - (long)Math.Floor( (double)a1 / b ) * b;
+				Assert.AreEqual( lhs.Onset,    rhs.Onset );
+				Assert.AreEqual( lhs.Duration, rhs.Duration );
 			}
+
+			var signal = compare.Signals[ 0 ];
+			Assert.IsNotNull( signal, "Failed to find a signal to verify" );
+
+			var fragment   = signal.GetFragment( file.Fragments[ 1 ] );
+			var timestamps = signal.GetTimestamps( file.Fragments[ 1 ] );
+
+			Assert.AreEqual( signal.NumberOfSamplesPerRecord, fragment.Count );
+			Assert.AreEqual( 1.5,                             timestamps[ 0 ],   0.1 );
+			Assert.AreEqual( 2.5,                             timestamps.Last(), 0.1 );
+		}
+		finally
+		{
+			File.Delete( tempFilename );
 		}
 	}
-	
+
 	private static string GetTempFilename()
 	{
 		return Path.Combine( Path.GetTempPath(), $"{Guid.NewGuid()}.edf" );

@@ -23,12 +23,12 @@ namespace StagPoint.EDF.Net
 		public EdfFileHeader Header { get; } = new EdfFileHeader();
 
 		/// <summary>
-		/// Returns the list of all Standard Signals stored in this file.
+		/// The list of all Standard Signals (containing numerical signal data) stored in this file.
 		/// </summary>
 		public List<EdfStandardSignal> Signals { get; } = new List<EdfStandardSignal>();
 
 		/// <summary>
-		/// Returns the list of all Annotation Signals stored in this file.
+		/// The list of all Annotation Signals stored in this file.
 		/// </summary>
 		public List<EdfAnnotationSignal> AnnotationSignals { get; } = new List<EdfAnnotationSignal>();
 		
@@ -67,6 +67,36 @@ namespace StagPoint.EDF.Net
 		#endregion 
 
 		#region Public functions
+
+		public void MarkFragment( double onset, double duration )
+		{
+			if( duration % Header.DurationOfDataRecord > double.Epsilon )
+			{
+				throw new ArgumentException( $"Duration must be a multiple of the Data Record size. {duration} is not a multiple of {Header.DurationOfDataRecord}", nameof( duration ) );
+			}
+
+			int dataRecordIndex = 0;
+
+			if( Fragments.Count > 0 )
+			{
+				var last = Fragments.Last();
+				
+				if( onset <= last.Onset + last.Duration )
+				{
+					throw new ArgumentException( $"Onset time {onset} overlaps an existing fragment", nameof( onset ) );
+				}
+
+				dataRecordIndex = last.DataRecordIndex + (int)Math.Floor( last.DataRecordDuration / Header.DurationOfDataRecord );
+			}
+
+			var newFragment = new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord )
+			{
+				Onset = onset,
+				Duration = duration
+			};
+			
+			Fragments.Add( newFragment );
+		}
 
 		/// <summary>
 		/// Reads from the file indicated
@@ -165,10 +195,7 @@ namespace StagPoint.EDF.Net
 				bool continueWriting = true;
 				while( continueWriting )
 				{
-					Header.NumberOfDataRecords.Value += 1;
-
 					continueWriting = false;
-					var writeTimekeepingAnnotation = isEdfPlusFile;
 					
 					for( int i = 0; i < Signals.Count; i++ )
 					{
@@ -180,28 +207,34 @@ namespace StagPoint.EDF.Net
 
 					for( int i = 0; i < AnnotationSignals.Count; i++ )
 					{
-						var annotationSignal = AnnotationSignals[ i ];
-						
 						if( !isEdfPlusFile )
 						{
 							throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
 						}
 
+						var fragmentMarker = Fragments.FirstOrDefault( x => x.DataRecordIndex == Header.NumberOfDataRecords.Value );
+						if( fragmentMarker != null )
+						{
+							dataRecordStartTime = fragmentMarker.Onset;
+						}
+
+						var annotationSignal = AnnotationSignals[ i ];
+						
 						annotationCounters[ i ] += writeAnnotationSignal(
 							writer,
 							annotationSignal,
 							annotationCounters[ i ],
-							writeTimekeepingAnnotation,
+							i == 0, // Only the first AnnotationSignal stores timekeeping annotations 
 							dataRecordStartTime
 						);
 
-						continueWriting            |= annotationCounters[ i ] < annotationSignal.NumberOfSamplesPerRecord;
-						writeTimekeepingAnnotation =  false;
+						continueWriting |= annotationCounters[ i ] < annotationSignal.NumberOfSamplesPerRecord;
 					}
 
 					// Keep track of the expected start time of the next Data Record 
 					// This allows us to know when the next data record is not contiguous.
-					dataRecordStartTime += Header.DurationOfDataRecord;
+					dataRecordStartTime              += Header.DurationOfDataRecord;
+					Header.NumberOfDataRecords.Value += 1;
 				}
 				
 				// Patch up the NumberOfDataRecords by seeking to the position of the field and overwriting the value. 
@@ -612,33 +645,28 @@ namespace StagPoint.EDF.Net
 		#region Public properties 
 			
 		/// <summary>
-		/// The number of seconds after the file start time when the section begins 
+		/// The number of seconds after the file start time when the DataFragment begins 
 		/// </summary>
-		public double Onset = 0;
+		public double Onset { get; set; } = 0;
 			
 		/// <summary>
-		/// The number of seconds included in this section 
+		/// The number of seconds included in this DataFragment 
 		/// </summary>
-		public double Duration = 0;
+		public double Duration { get; set; } = 0;
 
 		/// <summary>
 		/// The index of the Data Record that this EdfDataFragment starts on
 		/// </summary>
-		internal int DataRecordIndex = 0;
+		internal int DataRecordIndex { get; private set; } = 0;
 
 		/// <summary>
 		/// The duration, in seconds, of the source file's Data Record
 		/// </summary>
-		internal double DataRecordDuration = 0;
+		internal double DataRecordDuration { get; private set; } = 0;
 			
 		#endregion
 		
 		#region Constructor
-
-		private EdfDataFragment()
-		{
-			throw new NotImplementedException();
-		}
 
 		internal EdfDataFragment( int dataRecordIndex, double dataRecordDuration )
 		{
