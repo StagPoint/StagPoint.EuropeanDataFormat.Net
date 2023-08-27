@@ -146,7 +146,7 @@ namespace StagPoint.EDF.Net
 			set
 			{
 				// ReSharper disable once ConvertSwitchStatementToSwitchExpression
-				switch( FileType )
+				switch( value )
 				{
 					case EdfFileType.EDF:
 						Reserved.Value = StandardTexts.FileType.EDF;

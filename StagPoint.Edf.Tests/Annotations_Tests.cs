@@ -50,7 +50,7 @@ public class Annotations_Tests
 			
 			var compareFile = EdfFile.Open( tempFilename );
 
-			Assert.AreEqual( file.AnnotationSignals.Count,                  compareFile.AnnotationSignals.Count );
+			Assert.AreEqual( file.AnnotationSignals.Count, compareFile.AnnotationSignals.Count );
 
 			var lhsList = file.AnnotationSignals[ 0 ].Annotations;
 			var rhsList = compareFile.AnnotationSignals[ 0 ].Annotations;
@@ -214,7 +214,7 @@ public class Annotations_Tests
 		}
 		finally
 		{
-			//File.Delete( tempFilename );
+			File.Delete( tempFilename );
 		}
 	}
 	

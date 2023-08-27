@@ -87,6 +87,15 @@
       <None Update="Test Files\Discontinuous1.edf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Test Files\26.08.23-02.05.23_Oximetry.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\26.08.23-03.39.14_Oximetry.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\26.08.23-05.52.59_Oximetry.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

@@ -68,34 +68,38 @@ namespace StagPoint.EDF.Net
 
 		#region Public functions
 
-		public void MarkFragment( double onset, double duration )
+		/// <summary>
+		/// Sets the Start Time of a Data Record. 
+		/// </summary>
+		/// <param name="dataRecordIndex">The index of the Data Record to set the Start Time of</param>
+		/// <param name="startTime">The time, in seconds, from the start of this file when the new fragment starts</param>
+		public EdfDataFragment MarkFragment( int dataRecordIndex, double startTime )
 		{
-			if( duration % Header.DurationOfDataRecord > double.Epsilon )
+			// If there are any fragments, there must be a fragment matching the file's Start Time 
+			if( Fragments.Count == 0 && startTime > 0 )
 			{
-				throw new ArgumentException( $"Duration must be a multiple of the Data Record size. {duration} is not a multiple of {Header.DurationOfDataRecord}", nameof( duration ) );
+				Fragments.Add( new EdfDataFragment( 0, 0 ) );				
 			}
 
-			int dataRecordIndex = 0;
-
-			if( Fragments.Count > 0 )
+			// If an existing Fragment exists for the desired Data Record, update it. Otherwise, add a new Fragment.
+			var newFragment = Fragments.FirstOrDefault( x => x.StartRecordIndex == dataRecordIndex );
+			if( newFragment != null )
 			{
-				var last = Fragments.Last();
+				newFragment.StartTime = startTime;
+			}
+			else
+			{
+				newFragment = new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord ) { StartTime = startTime };
+				Fragments.Add( newFragment );
 				
-				if( onset <= last.Onset + last.Duration )
-				{
-					throw new ArgumentException( $"Onset time {onset} overlaps an existing fragment", nameof( onset ) );
-				}
-
-				dataRecordIndex = last.DataRecordIndex + (int)Math.Ceiling( last.Duration / Header.DurationOfDataRecord );
+				// Sort the fragment into its proper place. Lazy coding, but not performance critical or anything. 
+				Fragments.Sort();
 			}
 
-			var newFragment = new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord )
-			{
-				Onset = onset,
-				Duration = duration
-			};
+			// Recalculate the Duration and EndRecordIndex of each fragment
+			updateSegmentEndIndices();
 			
-			Fragments.Add( newFragment );
+			return newFragment;
 		}
 
 		/// <summary>
@@ -128,12 +132,18 @@ namespace StagPoint.EDF.Net
 
 				// Only want to perform this work once
 				var fileType = FileType;
+				
+				// Keeping track of the "expected start time" allows detection of discontinuous files 
+				double expectedRecordStartTime = 0;
 			
 				// Read in all Data Records stored. 
 				for( int i = 0; i < Header.NumberOfDataRecords; i++ )
 				{
-					readDataRecord( reader, i, fileType );
+					readDataRecord( reader, i, fileType, ref expectedRecordStartTime );
 				}
+				
+				// Make sure that all EdfFileFragments are updated 
+				updateSegmentEndIndices();
 			}
 		}
 
@@ -174,6 +184,8 @@ namespace StagPoint.EDF.Net
 					AnnotationSignals.Add( defaultAnnotationSignal );
 				}
 			}
+
+			assertFragmentsContiguousOrFileTypeIsCorrect();
 			
 			// Ensure that EdfStandardSignal.FrequencyInHz is updated.
 			updateSignalFrequency();
@@ -228,10 +240,10 @@ namespace StagPoint.EDF.Net
 							throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
 						}
 
-						var fragmentMarker = Fragments.FirstOrDefault( x => x.DataRecordIndex == Header.NumberOfDataRecords.Value );
+						var fragmentMarker = Fragments.FirstOrDefault( x => x.StartRecordIndex == Header.NumberOfDataRecords.Value );
 						if( fragmentMarker != null )
 						{
-							dataRecordStartTime = fragmentMarker.Onset;
+							dataRecordStartTime = fragmentMarker.StartTime;
 						}
 
 						var annotationSignal = AnnotationSignals[ i ];
@@ -286,6 +298,41 @@ namespace StagPoint.EDF.Net
 		#endregion
 
 		#region Private functions
+
+		private void assertFragmentsContiguousOrFileTypeIsCorrect()
+		{
+			if( FileType == EdfFileType.EDF_Plus_Discontinuous )
+			{
+				return;
+			}
+			
+			for( int i = 1; i < Fragments.Count; i++ )
+			{
+				var recordedStartTime = Fragments[ i ].StartTime;
+				var expectedStartTime = Fragments[ i - 1 ].StartTime + Fragments[ i - 1 ].Duration;
+				
+				if( Fragments[ i ].StartTime > Fragments[ i - 1 ].StartTime + Fragments[ i - 1 ].Duration + double.Epsilon )
+				{
+					throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {i}), but File Type is not marked as EDF+D" );
+				}
+			}
+		}
+		
+		private void updateSegmentEndIndices()
+		{
+			// Recalculate the EndRecordIndex and Duration of each fragment
+			for( int i = 0; i < Fragments.Count; i++ )
+			{
+				if( i < Fragments.Count - 1 )
+				{
+					Fragments[ i ].EndRecordIndex = Fragments[ i + 1 ].StartRecordIndex - 1;
+				}
+				else
+				{
+					Fragments[ i ].EndRecordIndex = Header.NumberOfDataRecords - 1;
+				}
+			}
+		}
 
 		private void updateSignalFrequency()
 		{
@@ -449,16 +496,12 @@ namespace StagPoint.EDF.Net
 			return position;
 		}
 		
-		private void readDataRecord( BinaryReader reader, int index, EdfFileType fileType )
+		private void readDataRecord( BinaryReader reader, int index, EdfFileType fileType, ref double expectedStartTime )
 		{
-			// By default a Data Record's start time is sequential, with each one starting immediately after
-			// the previous one ended. The only exception is when reading EDF+D (EDF+ Discontinuous) files.
-			var expectedStartTime = Header.DurationOfDataRecord * index;
-			
 			// The first annotation of the first 'EDF Annotations' signal in each data record is empty, but its timestamp specifies
 			// how many seconds after the file start time that data record starts.
 			var    isFirstAnnotationSignal = true;
-			double recordedStartTime       = 0;
+			double recordedStartTime       = expectedStartTime;
 
 			// // If the file contains discontinuous data, we need to read the timekeeping annotation of each
 			// // data record and use that value instead.
@@ -503,14 +546,8 @@ namespace StagPoint.EDF.Net
 						// Add a new fragment when necessary
 						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
 						{
-							Onset    = expectedStartTime,
-							Duration = Header.DurationOfDataRecord
+							StartTime = expectedStartTime,
 						} );
-					}
-					else
-					{
-						// Otherwise just extend the last fragment's duration 
-						Fragments.Last().Duration += Header.DurationOfDataRecord;
 					}
 				}
 				else
@@ -520,8 +557,7 @@ namespace StagPoint.EDF.Net
 						// Start a new fragment 
 						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
 						{
-							Onset    = recordedStartTime,
-							Duration = Header.DurationOfDataRecord
+							StartTime = recordedStartTime,
 						} );
 					}
 					else
@@ -531,13 +567,16 @@ namespace StagPoint.EDF.Net
 						// since there are no signals, timing is irrelevant. 
 						if( Header.DurationOfDataRecord > 0 && Signals.Count > 0 )
 						{
-							throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {index}), but File Type is not EDF+D" );
+							throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {index}), but File Type is not marked as EDF+D" );
 						}
 					}
 				}
 					
 				isFirstAnnotationSignal = false;
 			}
+
+			// Keep track of the (potentially changed) expected start time. 
+			expectedStartTime = recordedStartTime + Header.DurationOfDataRecord;
 		}
 		
 		private void readAnnotationSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation, ref double startTime )
@@ -679,50 +718,60 @@ namespace StagPoint.EDF.Net
 	/// Represents the start time (in seconds from the file start time) and Duration (in seconds)
 	/// of a section of Signal samples stored in the file. 
 	/// </summary>
-	public class EdfDataFragment
+	public class EdfDataFragment : IComparable<EdfDataFragment>
 	{
 		#region Public properties 
 			
 		/// <summary>
 		/// The number of seconds after the file start time when the DataFragment begins 
 		/// </summary>
-		public double Onset { get; set; } = 0;
-			
+		public double StartTime { get; set; } = 0;
+
 		/// <summary>
 		/// The number of seconds included in this DataFragment 
 		/// </summary>
-		public double Duration { get; set; } = 0;
+		public double Duration { get => (EndRecordIndex - StartRecordIndex + 1) * DataRecordLength; }
 
 		/// <summary>
 		/// The index of the Data Record that this EdfDataFragment starts on
 		/// </summary>
-		internal int DataRecordIndex { get; private set; } = 0;
+		internal int StartRecordIndex { get; private set; } = 0;
+
+		/// <summary>
+		/// The index of the Data Record that this EdfDataFragment ends on
+		/// </summary>
+		internal int EndRecordIndex { get; set; } = 0;
 
 		/// <summary>
 		/// The duration, in seconds, of the source file's Data Record
 		/// </summary>
-		internal double DataRecordDuration { get; private set; } = 0;
+		internal double DataRecordLength { get; private set; } = 0;
 			
 		#endregion
 		
 		#region Constructor
 
-		internal EdfDataFragment( int dataRecordIndex, double dataRecordDuration )
+		internal EdfDataFragment( int startRecordIndex, double dataRecordLength )
 		{
-			DataRecordIndex  = dataRecordIndex;
-			DataRecordDuration = dataRecordDuration;
+			StartRecordIndex = startRecordIndex;
+			EndRecordIndex   = startRecordIndex;
+			DataRecordLength = dataRecordLength;
 		}
 		
 		#endregion 
 
 		#region Base class overrides
 
-		/// <summary>
-		/// Returns a string representation of this object
-		/// </summary>
+		/// <inheritdoc />
+		public int CompareTo( EdfDataFragment other )
+		{
+			return this.StartRecordIndex.CompareTo( other.StartRecordIndex );
+		}
+
+		/// <inheritdoc />
 		public override string ToString()
 		{
-			return $"Start: {Onset:F2}, Duration: {Duration:F2}";
+			return $"Start: {StartTime:F2}, Records: {StartRecordIndex} - {EndRecordIndex}, Duration: {Duration:F2}";
 		}
 			
 		#endregion 

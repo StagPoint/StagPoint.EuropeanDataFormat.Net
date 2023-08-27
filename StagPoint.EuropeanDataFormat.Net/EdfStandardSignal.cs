@@ -23,16 +23,16 @@ namespace StagPoint.EDF.Net
 		public double FrequencyInHz { get; internal set; }
 		
 		/// <summary>
-		/// Calculates and returns the signal amplification (in Units/bit) as defined by the four parameters
+		/// Calculates and returns the signal sensitivity (Units/bit) as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double Amplification { get => (PhysicalMaximum - PhysicalMinimum) / ((double)DigitalMaximum - DigitalMinimum); }
+		public double Sensitivity { get => (PhysicalMaximum - PhysicalMinimum) / ((double)DigitalMaximum - DigitalMinimum); }
 		
 		/// <summary>
 		/// Calculates and returns the signal offset as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double Offset { get => (PhysicalMaximum / Amplification) - DigitalMaximum; }
+		public double Offset { get => (PhysicalMaximum / Sensitivity) - DigitalMaximum; }
 
 		#endregion
 		
@@ -56,7 +56,7 @@ namespace StagPoint.EDF.Net
 		/// </summary>
 		public List<double> GetFragment( EdfDataFragment fragment )
 		{
-			var startIndex = fragment.DataRecordIndex * NumberOfSamplesPerRecord;
+			var startIndex = fragment.StartRecordIndex * NumberOfSamplesPerRecord;
 			var endIndex   = Math.Min( Samples.Count, startIndex + NumberOfSamplesPerRecord );
 
 			return Samples.GetRange( startIndex, endIndex - startIndex );
@@ -70,15 +70,15 @@ namespace StagPoint.EDF.Net
 		/// </summary>
 		public List<double> GetTimestamps( EdfDataFragment fragment )
 		{
-			var interval   = fragment.DataRecordDuration / NumberOfSamplesPerRecord;
-			var startIndex = fragment.DataRecordIndex * NumberOfSamplesPerRecord;
+			var interval   = fragment.DataRecordLength / NumberOfSamplesPerRecord;
+			var startIndex = fragment.StartRecordIndex * NumberOfSamplesPerRecord;
 			var endIndex   = (int)Math.Min( Samples.Count, startIndex + NumberOfSamplesPerRecord * fragment.Duration );
 
 			var result = new List<double>( endIndex - startIndex );
 			
 			for( int i = 0; i < endIndex - startIndex; i++ )
 			{
-				result.Add( fragment.Onset + interval * i );
+				result.Add( fragment.StartTime + interval * i );
 			}
 
 			return result;
