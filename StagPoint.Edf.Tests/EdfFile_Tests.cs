@@ -329,10 +329,35 @@ public class EdfFile_Tests
 			// Make sure that all auto-generated Fragments were properly written and read back
 			Assert.AreEqual( file1.Fragments.Count, compare.Fragments.Count );
 			
-			// Ensure that nothing changed behind the scenes with which Signal samples got saved.
+			// Ensure that nothing changed behind the scenes with which Signal samples got saved, and all samples from
+			// all three files got correctly saved. 
 			for( int i = 0; i < file1.Signals.Count; i++ )
 			{
 				Extensions.AssertSignalsSame( file1.Signals[ i ], compare.Signals[ i ], file1.Signals[ i ].SignalPhysicalUnits * 1.001 );
+			}
+
+			// For each Fragment, compare the actual samples from each Signal from the saved file 
+			for( int fragmentIndex = 0; fragmentIndex < file1.Fragments.Count; fragmentIndex++ )
+			{
+				var fragment = file1.Fragments[ fragmentIndex ];
+
+				for( int signalIndex = 0; signalIndex < file1.Signals.Count; signalIndex++ )
+				{
+					var original = file1.Signals[ signalIndex ].GetFragment( fragment );
+					var test     = compare.Signals[ signalIndex ].GetFragment( fragment );
+
+					CollectionAssert.AreEqual( original, test );
+				}
+			}
+			
+			// Just for good measure, make sure that extracted Fragments match the original non-appended file as well
+			var middleFragment = file1.Fragments[ 1 ];
+			for( int signalIndex = 0; signalIndex < file2.Signals.Count; signalIndex++ )
+			{
+				var original = file2.Signals[ signalIndex ].Samples;
+				var test     = compare.Signals[ signalIndex ].GetFragment( middleFragment );
+				
+				CollectionAssert.AreEqual( original, test );
 			}
 		}
 		finally

@@ -203,6 +203,10 @@ namespace StagPoint.EDF.Net
 
 		#region Public Read/Write functions
 
+		/// <summary>
+		/// Returns TRUE if the other EdfFileHeader is compatible with this one. Compatability tests are
+		/// used to verify that one or more files may be merged or appended. 
+		/// </summary>
 		public bool IsCompatibleWith( EdfFileHeader other )
 		{
 			if( Math.Abs( DurationOfDataRecord.Value - other.DurationOfDataRecord ) > 1e-4 )
@@ -228,6 +232,7 @@ namespace StagPoint.EDF.Net
 
 				for( int i = 0; i < lhs.Count; i++ )
 				{
+					// TODO: I don't like using ToString() here. Replace this with class-specific comparisons of the Value property. 
 					if( string.Compare( lhs.ToString(), rhs.ToString(), StringComparison.Ordinal ) != 0 )
 					{
 						return false;
@@ -310,6 +315,33 @@ namespace StagPoint.EDF.Net
 			readListFromBuffer( buffer, Prefiltering,         NumberOfSignals, () => new EdfAsciiString( 80 ) );
 			readListFromBuffer( buffer, SamplesPerDataRecord, NumberOfSignals, () => new EdfAsciiInteger( 8 ) );
 			readListFromBuffer( buffer, SignalReserved,       NumberOfSignals, () => new EdfAsciiString( 32 ) );
+		}
+
+		/// <summary>
+		/// Copies all of this EdfFileHeader instance data to the other instance
+		/// </summary>
+		public void CopyTo( EdfFileHeader header )
+		{
+			header.Version.Value                 = this.Version.Value;
+			header.PatientIdentification.Value   = this.PatientIdentification.Value;
+			header.RecordingIdentification.Value = this.RecordingIdentification.Value;
+			header.StartTime.Value               = this.StartTime.Value;
+			header.HeaderRecordSize.Value        = this.HeaderRecordSize.Value;
+			header.Reserved.Value                = this.Reserved.Value;
+			header.NumberOfDataRecords.Value     = this.NumberOfDataRecords.Value;
+			header.DurationOfDataRecord.Value    = this.DurationOfDataRecord.Value;
+			header.NumberOfSignals.Value         = this.NumberOfSignals.Value;
+			
+			header.Labels.AddRange( Labels );
+			header.TransducerType.AddRange( TransducerType );
+			header.PhysicalDimension.AddRange( PhysicalDimension );
+			header.PhysicalMinimum.AddRange( PhysicalMinimum );
+			header.PhysicalMaximum.AddRange( PhysicalMaximum );
+			header.DigitalMinimum.AddRange( DigitalMinimum );
+			header.DigitalMaximum.AddRange( DigitalMaximum );
+			header.Prefiltering.AddRange( Prefiltering );
+			header.SamplesPerDataRecord.AddRange( SamplesPerDataRecord );
+			header.SignalReserved.AddRange( SignalReserved );
 		}
 		
 		#endregion

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +20,7 @@ namespace StagPoint.EDF.Net
 		/// <summary>
 		/// Returns the EdfFileHeader instance containing all of the information stored in the EDF Header of this file.
 		/// </summary>
-		public EdfFileHeader Header { get; } = new EdfFileHeader();
+		public EdfFileHeader Header { get; private set; } = new EdfFileHeader();
 
 		/// <summary>
 		/// The list of all Standard Signals (containing numerical signal data) stored in this file.
@@ -609,21 +608,6 @@ namespace StagPoint.EDF.Net
 			var    isFirstAnnotationSignal = true;
 			double recordedStartTime       = expectedStartTime;
 
-			// // If the file contains discontinuous data, we need to read the timekeeping annotation of each
-			// // data record and use that value instead.
-			// // See "Time Keeping of Data Records" in the EDF+ specification - https://www.edfplus.info/specs/edfplus.html#timekeeping
-			// if( fileType == EdfFileType.EDF_Plus_Discontinuous )
-			// {
-			// 	// TODO: Finish EDF+D implementation 
-			// 	throw new NotImplementedException();
-			// }
-			// else if( fileType == EdfFileType.EDF_Plus )
-			// {
-			// 	// NOTE: An EDF+C file may also contain timekeeping annotations in each data record, but 
-			// 	// those should always match the record start time calculated above.
-			// 	// TODO: Should we assert that EDF+C timekeeping annotations always match calculated Data Record start time?
-			// }
-
 			foreach( var signal in Signals )
 			{
 				readStandardSignal( reader, signal );
@@ -631,6 +615,13 @@ namespace StagPoint.EDF.Net
 			
 			foreach( var signal in AnnotationSignals )
 			{
+				//
+				// If the file contains discontinuous data, we need to read the timekeeping annotation of each
+				// data record and use that value instead.
+				// See "Time Keeping of Data Records" in the EDF+ specification
+				//     https://www.edfplus.info/specs/edfplus.html#timekeeping
+				//
+				
 				readAnnotationSignal( reader, signal, isFirstAnnotationSignal, ref recordedStartTime );
 
 				// Check timekeeping annotation?
@@ -694,6 +685,10 @@ namespace StagPoint.EDF.Net
 
 			if( expectTimekeepingAnnotation )
 			{
+				// If the file contains discontinuous data, we need to read the timekeeping annotation of each
+				// data record and use that value instead.
+				// See "Time Keeping of Data Records" in the EDF+ specification - https://www.edfplus.info/specs/edfplus.html#timekeeping
+				
 				var timeKeeping = readTimekeepingAnnotation( ref position );
 				startTime = timeKeeping.Onset;
 				
@@ -839,12 +834,12 @@ namespace StagPoint.EDF.Net
 		public double Duration { get => (EndRecordIndex - StartRecordIndex + 1) * DataRecordLength; }
 
 		/// <summary>
-		/// The index of the Data Record that this EdfDataFragment starts on
+		/// The index of the first Data Record included in this EdfDataFragment
 		/// </summary>
 		internal int StartRecordIndex { get; private set; } = 0;
 
 		/// <summary>
-		/// The index of the Data Record that this EdfDataFragment ends on
+		/// The index of the last Data Record included in this EdfDataFragment
 		/// </summary>
 		internal int EndRecordIndex { get; set; } = 0;
 

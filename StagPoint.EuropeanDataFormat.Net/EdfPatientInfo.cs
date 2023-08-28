@@ -169,8 +169,14 @@ namespace StagPoint.EDF.Net
 
 		internal override void ReadFrom( BinaryReader buffer )
 		{
-			// This class will not be used to read directly from a buffer
-			throw new NotImplementedException();
+			// NOTE: It is not expected that this function ever be called by user code. 
+			
+			base.ReadFrom( buffer );
+
+			if( !TryParse( this.Value, this ) )
+			{
+				throw new FormatException( $"The value '{Value}' does not appear to be a valid format for {nameof( EdfPatientInfo )}" );
+			}
 		}
 
 		/// <summary>

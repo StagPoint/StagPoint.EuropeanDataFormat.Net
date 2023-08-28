@@ -57,7 +57,7 @@ namespace StagPoint.EDF.Net
 		public List<double> GetFragment( EdfDataFragment fragment )
 		{
 			var startIndex = fragment.StartRecordIndex * NumberOfSamplesPerRecord;
-			var endIndex   = Math.Min( Samples.Count, startIndex + NumberOfSamplesPerRecord );
+			var endIndex   = Math.Min( Samples.Count, (fragment.EndRecordIndex + 1) * NumberOfSamplesPerRecord );
 
 			return Samples.GetRange( startIndex, endIndex - startIndex );
 		}
