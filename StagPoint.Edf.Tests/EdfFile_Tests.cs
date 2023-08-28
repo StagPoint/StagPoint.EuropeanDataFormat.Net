@@ -58,7 +58,7 @@ public class EdfFile_Tests
 			Assert.IsNotNull( compareFile.Signals.First( x => x.Label.Value == StandardTexts.SignalType.OxygenSaturation ) );
 			Assert.IsNotNull( compareFile.AnnotationSignals.First( x => x.Label.Value == StandardTexts.SignalType.EdfAnnotations ) );
 
-			Extensions.AssertSignalsSame( file.Signals[ 0 ], compareFile.Signals[ 0 ], file.Signals[ 0 ].Sensitivity * 1.001 );
+			Extensions.AssertSignalsSame( file.Signals[ 0 ], compareFile.Signals[ 0 ], file.Signals[ 0 ].SignalPhysicalUnits * 1.001 );
 		}
 		finally
 		{
@@ -168,7 +168,7 @@ public class EdfFile_Tests
 			// Ensure that nothing changed behind the scenes with which Signal samples got saved.
 			for( int i = 0; i < file.Signals.Count; i++ )
 			{
-				Extensions.AssertSignalsSame( file.Signals[ i ], compare.Signals[ i ], signal.Sensitivity * 1.001 );
+				Extensions.AssertSignalsSame( file.Signals[ i ], compare.Signals[ i ], signal.SignalPhysicalUnits * 1.001 );
 			}
 		}
 		finally
@@ -273,14 +273,12 @@ public class EdfFile_Tests
 		{
 			// IMPORTANT: File must be marked as EDF+D in order to save discontinuous files
 			file.FileType = EdfFileType.EDF_Plus_Discontinuous;
-			
-			file.WriteTo( tempFilename );
 
+			// Write the file and read it back, for comparison
+			file.WriteTo( tempFilename );
 			var compare = EdfFile.Open( tempFilename );
 			
-			// NOTE: Because the segments we added manually above are contiguous, EdfFile.WriteTo() did
-			// not retain the specified fragments, and instead loads with a single fragment that encompasses
-			// the entire data set. 
+			// Make sure that the marked fragments are included as such in the stored file. 
 			Assert.AreEqual( 4, compare.Fragments.Count );
 			
 			// Ensure tha expected gap between fragments exists 
@@ -290,6 +288,51 @@ public class EdfFile_Tests
 				var recordedStartTime = compare.Fragments[ i ].StartTime;
 				
 				Assert.AreEqual( expectedStartTime + GAP_SIZE, recordedStartTime, 0.001 );
+			}
+		}
+		finally
+		{
+			File.Delete( tempFilename );
+		}
+	}
+
+	[TestMethod]
+	public void AppendFilesWithGaps()
+	{
+		string filename1 = Path.Combine( Environment.CurrentDirectory, "Test Files", "PulseOximetry1.edf" );
+		string filename2 = Path.Combine( Environment.CurrentDirectory, "Test Files", "PulseOximetry2.edf" );
+		string filename3 = Path.Combine( Environment.CurrentDirectory, "Test Files", "PulseOximetry3.edf" );
+		
+		if( !File.Exists( filename1 ) || !File.Exists( filename2 ) || !File.Exists( filename3 ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		var file1 = EdfFile.Open( filename1 );
+		var file2 = EdfFile.Open( filename2 );
+		var file3 = EdfFile.Open( filename3 );
+	
+		file1.Append( file2 );
+		file1.Append( file3 );
+		
+		var tempFilename = GetTempFilename();
+
+		try
+		{
+			// Write the file and read it back, for comparison
+			file1.WriteTo( tempFilename );
+			var compare = EdfFile.Open( tempFilename );
+
+			// Should have been assigned EDF+D file type automatically when calling Append with a file that produces a gap
+			Assert.AreEqual( EdfFileType.EDF_Plus_Discontinuous, compare.Header.FileType );
+			
+			// Make sure that all auto-generated Fragments were properly written and read back
+			Assert.AreEqual( file1.Fragments.Count, compare.Fragments.Count );
+			
+			// Ensure that nothing changed behind the scenes with which Signal samples got saved.
+			for( int i = 0; i < file1.Signals.Count; i++ )
+			{
+				Extensions.AssertSignalsSame( file1.Signals[ i ], compare.Signals[ i ], file1.Signals[ i ].SignalPhysicalUnits * 1.001 );
 			}
 		}
 		finally

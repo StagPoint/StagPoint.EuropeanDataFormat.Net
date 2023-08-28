@@ -203,6 +203,43 @@ namespace StagPoint.EDF.Net
 
 		#region Public Read/Write functions
 
+		public bool IsCompatibleWith( EdfFileHeader other )
+		{
+			if( Math.Abs( DurationOfDataRecord.Value - other.DurationOfDataRecord ) > 1e-4 )
+				return false;
+			
+			if( NumberOfSignals.Value != other.NumberOfSignals.Value )
+				return false;
+
+			if( !areListsCompatible( Labels,               other.Labels ) ) return false;
+			if( !areListsCompatible( TransducerType,       other.TransducerType ) ) return false;
+			if( !areListsCompatible( PhysicalDimension,    other.PhysicalDimension ) ) return false;
+			if( !areListsCompatible( PhysicalMinimum,      other.PhysicalMinimum ) ) return false;
+			if( !areListsCompatible( PhysicalMaximum,      other.PhysicalMaximum ) ) return false;
+			if( !areListsCompatible( DigitalMinimum,       other.DigitalMinimum ) ) return false;
+			if( !areListsCompatible( DigitalMaximum,       other.DigitalMaximum ) ) return false;
+			if( !areListsCompatible( Prefiltering,         other.Prefiltering ) ) return false;
+			if( !areListsCompatible( SamplesPerDataRecord, other.SamplesPerDataRecord ) ) return false;
+			if( !areListsCompatible( SignalReserved,       other.SignalReserved ) ) return false;
+			
+			bool areListsCompatible<T>( List<T> lhs, List<T> rhs ) where T : EdfAsciiField
+			{
+				if( lhs.Count != rhs.Count ) return false;
+
+				for( int i = 0; i < lhs.Count; i++ )
+				{
+					if( string.Compare( lhs.ToString(), rhs.ToString(), StringComparison.Ordinal ) != 0 )
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			return true;
+		}
+
 		/// <summary>
 		/// Writes all EDF File Header information to the provided Stream
 		/// </summary>

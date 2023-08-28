@@ -40,5 +40,15 @@ namespace StagPoint.EDF.Net
 		{
 			return (value - a) / (b - a);
 		}
+
+		/// <summary>
+		/// Remaps a number from one range to another
+		/// </summary>
+		[MethodImpl( MethodImplOptions.AggressiveInlining )]
+		public static double Remap( double fromA, double fromB, double toA, double toB, double value )
+		{
+			var t = InverseLerp( fromA, fromB, value );
+			return Lerp( toA, toB, t );
+		}
 	}
 }

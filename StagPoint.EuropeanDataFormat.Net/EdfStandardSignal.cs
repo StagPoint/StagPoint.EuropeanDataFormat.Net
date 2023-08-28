@@ -26,13 +26,13 @@ namespace StagPoint.EDF.Net
 		/// Calculates and returns the signal sensitivity (Units/bit) as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double Sensitivity { get => (PhysicalMaximum - PhysicalMinimum) / ((double)DigitalMaximum - DigitalMinimum); }
+		public double SignalPhysicalUnits { get => (PhysicalMaximum - PhysicalMinimum) / ((double)DigitalMaximum - DigitalMinimum); }
 		
 		/// <summary>
 		/// Calculates and returns the signal offset as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double Offset { get => (PhysicalMaximum / Sensitivity) - DigitalMaximum; }
+		public double SignalOffset { get => (PhysicalMaximum / SignalPhysicalUnits) - DigitalMaximum; }
 
 		#endregion
 		

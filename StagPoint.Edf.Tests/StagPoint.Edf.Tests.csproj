@@ -87,13 +87,22 @@
       <None Update="Test Files\Discontinuous1.edf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Test Files\26.08.23-02.05.23_Oximetry.EDF">
+      <None Update="Test Files\PulseOximeter1.EDF">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Test Files\26.08.23-03.39.14_Oximetry.EDF">
+      <None Update="Test Files\PulseOximeter2.EDF">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Test Files\26.08.23-05.52.59_Oximetry.EDF">
+      <None Update="Test Files\PulseOximeter3.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\PulseOximetry1.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\PulseOximetry2.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\PulseOximetry3.EDF">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

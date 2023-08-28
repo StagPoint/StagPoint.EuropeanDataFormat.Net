@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -69,6 +70,111 @@ namespace StagPoint.EDF.Net
 		#region Public functions
 
 		/// <summary>
+		/// Appends one compatible EDF file to the end of another. 
+		/// </summary>
+		/// <param name="fileToAppend">The file to append to the end of this file</param>
+		public void Append( EdfFile fileToAppend )
+		{
+			if( !this.Header.IsCompatibleWith( fileToAppend.Header ) )
+			{
+				throw new Exception( "File headers are not compatible" );
+			}
+
+			var endTime = CalculateEndTime();
+			if( fileToAppend.Header.StartTime < endTime )
+			{
+				throw new Exception( "Appended files must start at or after the end of the file being appended to" );
+			}
+
+			// Automatically set the EDF+D file type when necessary
+			if( fileToAppend.Header.StartTime > endTime.AddMilliseconds( 1 ) )
+			{
+				Header.FileType = EdfFileType.EDF_Plus_Discontinuous;
+			}
+
+			var timeOffset      = fileToAppend.Header.StartTime.Value.Subtract( Header.StartTime ).TotalSeconds;
+			var dataRecordIndex = Header.NumberOfDataRecords.Value;
+			
+			MarkFragment( dataRecordIndex, timeOffset );
+
+			// Append annotations
+			if( fileToAppend.AnnotationSignals.Count > 0 )
+			{
+				EdfAnnotationSignal thisAnnotations = null;
+				
+				// Always append annotations to the first AnnotationSignal (whether new or existing) on the target file
+				if( this.AnnotationSignals.Count == 0 )
+				{
+					thisAnnotations = new EdfAnnotationSignal();
+					AnnotationSignals.Add( thisAnnotations );
+					
+					thisAnnotations.NumberOfSamplesPerRecord.Value = fileToAppend.AnnotationSignals[ 0 ].NumberOfSamplesPerRecord;
+				}
+				else
+				{
+					thisAnnotations = AnnotationSignals[ 0 ];
+				}
+
+				thisAnnotations.Annotations.RemoveAll( x => x.IsTimeKeepingAnnotation );
+
+				thisAnnotations.Annotations.Add( new EdfAnnotation()
+				{
+					Onset      = timeOffset,
+					Annotation = $"APPEND: {timeOffset}",
+					Duration   = fileToAppend.CalculateEndTime().Subtract( fileToAppend.Header.StartTime ).TotalSeconds
+				} );
+				
+				foreach( var appendAnnotations in fileToAppend.AnnotationSignals )
+				{
+					foreach( var annotation in appendAnnotations.Annotations )
+					{
+						if( !annotation.IsTimeKeepingAnnotation )
+						{
+							var annotationCopy = new EdfAnnotation()
+							{
+								Onset    = annotation.Onset + timeOffset,
+								Duration = annotation.Duration,
+							};
+
+							annotationCopy.AnnotationList.AddRange( annotation.AnnotationList );
+							
+							thisAnnotations.Annotations.Add( annotationCopy );
+						}
+					}
+				}
+			}
+
+			// Append all signal samples
+			for( int i = 0; i < Signals.Count; i++ )
+			{
+				Signals[ i ].Samples.AddRange( fileToAppend.Signals[ i ].Samples );
+			}
+			
+			// TODO: Updating the number of data records in this way might be incorrect for "Annotations Only" files?
+			// Update the number of Data Records by adding the number of Data Records the appended file
+			// has, on the assumption that it will take that many additional Data Records to store the 
+			// additional data. 
+			Header.NumberOfDataRecords.Value += fileToAppend.Header.NumberOfDataRecords;
+			updateFragmentEndIndices();
+		}
+
+		/// <summary>
+		/// Returns the DateTime indicating when the recording ends 
+		/// </summary>
+		public DateTime CalculateEndTime()
+		{
+			// For a fragmented file, we need to add the last fragment's StartTime and Duration to the file's StartTime 
+			if( Fragments.Count > 0 )
+			{
+				var lastFragment = Fragments.Last();
+				return Header.StartTime.Value.AddSeconds( lastFragment.StartTime + lastFragment.Duration );
+			}
+
+			// For a contiguous file, the end time is a straightforward calculation based on the number and duration of Data Records.
+			return Header.StartTime.Value.AddSeconds( Header.DurationOfDataRecord * Header.NumberOfDataRecords );
+		}
+
+		/// <summary>
 		/// Sets the Start Time of a Data Record. 
 		/// </summary>
 		/// <param name="dataRecordIndex">The index of the Data Record to set the Start Time of</param>
@@ -97,7 +203,7 @@ namespace StagPoint.EDF.Net
 			}
 
 			// Recalculate the Duration and EndRecordIndex of each fragment
-			updateSegmentEndIndices();
+			updateFragmentEndIndices();
 			
 			return newFragment;
 		}
@@ -143,7 +249,7 @@ namespace StagPoint.EDF.Net
 				}
 				
 				// Make sure that all EdfFileFragments are updated 
-				updateSegmentEndIndices();
+				updateFragmentEndIndices();
 			}
 		}
 
@@ -318,7 +424,7 @@ namespace StagPoint.EDF.Net
 			}
 		}
 		
-		private void updateSegmentEndIndices()
+		private void updateFragmentEndIndices()
 		{
 			// Recalculate the EndRecordIndex and Duration of each fragment
 			for( int i = 0; i < Fragments.Count; i++ )
@@ -352,7 +458,7 @@ namespace StagPoint.EDF.Net
 				var    sample      = signal.Samples[ position ];
 				double inverseT    = MathUtil.InverseLerp( signal.PhysicalMinimum, signal.PhysicalMaximum, sample );
 				short  outputValue = (short)MathUtil.Lerp( signal.DigitalMinimum, signal.DigitalMaximum, inverseT );
-				
+
 				writer.Write( outputValue );
 
 				++position;
