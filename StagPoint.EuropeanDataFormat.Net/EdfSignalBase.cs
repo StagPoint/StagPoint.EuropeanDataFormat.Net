@@ -23,7 +23,13 @@ namespace StagPoint.EDF.Net
 		
 		#region Constructors
 
-		protected EdfSignalBase() { }
+		protected EdfSignalBase()
+		{
+			PhysicalMinimum.Value = -32767;
+			PhysicalMaximum.Value = 32767;
+			DigitalMinimum.Value  = -32767;
+			DigitalMaximum.Value  = 32767;
+		}
 
 		internal EdfSignalBase( EdfSignalHeader header )
 		{

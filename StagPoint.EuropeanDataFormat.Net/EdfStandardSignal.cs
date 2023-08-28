@@ -36,7 +36,12 @@ namespace StagPoint.EDF.Net
 
 		#endregion
 		
-		#region Constructor 
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the EdfStandardSignal class
+		/// </summary>
+		public EdfStandardSignal() { }
 		
 		/// <summary>
 		/// Initializes a new instance of the EdfStandardSignal class 

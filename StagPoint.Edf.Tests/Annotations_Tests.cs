@@ -65,6 +65,7 @@ public class Annotations_Tests
 				var lhs = lhsList[ i ];
 				var rhs = rhsList[ i ];
 
+				// TODO: ToString() is *currently* a reliable way to ensure that all fields match, but should make this test more explicit.
 				Assert.AreEqual( lhs.ToString(), rhs.ToString() );
 			}
 		}

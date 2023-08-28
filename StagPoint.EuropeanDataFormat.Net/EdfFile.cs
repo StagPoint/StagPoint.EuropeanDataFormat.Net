@@ -586,6 +586,19 @@ namespace StagPoint.EDF.Net
 					foreach( var description in annotation.AnnotationList )
 					{
 						writer.Write( Encoding.UTF8.GetBytes( description ) );
+
+						// Linking signals to specific recording channels can be optionally specified in
+						// EDF+ for which each corresponding annotation must be followed by the two-character
+						// string '@@', followed by the corresponding standard EDF+ label.
+						// Examples are: 'Limb movement@@EMG RAT' or 'EEG arousal@@Fpz-Cz' .
+						//    https://www.edfplus.info/specs/edftexts.html#linkannotations
+						if( !string.IsNullOrEmpty( annotation.LinkedChannel ) )
+						{
+							writer.Write( (byte)'@' );
+							writer.Write( (byte)'@' );
+							writer.Write(  Encoding.ASCII.GetBytes( annotation.LinkedChannel ) );
+						}
+						
 						writer.Write( (byte)0x14 );
 					}
 				}
@@ -742,7 +755,17 @@ namespace StagPoint.EDF.Net
 						break;
 					}
 
-					var description = parseString( ref position );
+					string description   = parseString( ref position );
+					string linkedChannel = null;
+
+					var channelIndex = description.IndexOf( "@@", StringComparison.Ordinal );
+					if( channelIndex != -1 )
+					{
+						annotation.LinkedChannel = description.Substring( channelIndex + 2 );
+						
+						description = description.Substring( 0, channelIndex );
+					}
+					
 					annotation.AnnotationList.Add( description );
 				}
 

@@ -1,17 +1,47 @@
-![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/StagPoint/StagPoint.EDF.V2)
-<a href="https://github.com/StagPoint/StagPoint.EDF.V2/issues">
-<img src="https://img.shields.io/github/issues/StagPoint/StagPoint.EDF.V2"  alt="Issues"/>
+![GitHub issues](https://img.shields.io/github/issues-closed-raw/StagPoint/StagPoint.EuropeanDataFormat.Net)
+<a href="https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/master/LICENSE">
+<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EuropeanDataFormat.Net" alt="License"/>
 </a>
-<a href="https://github.com/StagPoint/StagPoint.EDF.V2/blob/master/LICENSE">
-<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EDF.V2" alt="License"/>
-</a>
-[![Nuget](https://img.shields.io/nuget/v/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
-[![Nuget](https://img.shields.io/nuget/dt/StagPoint.EDF.Net)](https://www.nuget.org/packages/StagPoint.EDF.Net/)
+[![Nuget](https://img.shields.io/nuget/v/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
+[![Nuget](https://img.shields.io/nuget/dt/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/StagPoint/StagPoint.EuropeanDataFormat.Net)
+![GitHub all releases](https://img.shields.io/github/downloads/StagPoint/StagPoint.EuropeanDataFormat.net/total)
 
 # StagPoint.EuropeanDataFormat.Net
 #### .NET library for reading and writing European Data File (EDF) format files
 
+<!-- TOC -->
+* [StagPoint.EuropeanDataFormat.Net](#stagpointeuropeandataformatnet)
+      * [.NET library for reading and writing European Data File (EDF) format files](#net-library-for-reading-and-writing-european-data-file-edf-format-files)
+* [Summary](#summary)
+* [Binary Distribution](#binary-distribution)
+* [European Data Format](#european-data-format)
+  * [The European Data File Specification](#the-european-data-file-specification)
+      * [ASCII-format fields](#ascii-format-fields)
+  * [Header Record Data Structure](#header-record-data-structure)
+    * [Header Record - Fixed-sized portion](#header-record---fixed-sized-portion)
+    * [Header Record - Signal Information](#header-record---signal-information)
+<!-- TOC -->
+
+# Summary
+
+This library implements the European Data Format (EDF) and associated EDF+ specifications in a purely managed .NET library, written entirely in C#. 
+It supports reading, writing, and modifying standard EDF format files, and supports EDF+ extensions such as Annotations and discontinuous files.
+Usage examples can be found in the StagPoint.EDF.Tests unit testing project. This project is provided under the terms of the [MIT license](http://choosealicense.com/licenses/mit/).
+
+# Binary Distribution
+
+The easiest way to make use of this library in your own project is to add a reference to the following [NuGet package](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/).
+
 ---
+
+# European Data Format
+
+European Data Format (EDF) is a standard file format designed for exchange and storage of medical time series. Being an open and non-proprietary format, EDF(+) is commonly used to archive, exchange and analyse data from commercial devices in a format that is independent of the acquisition system. In this way, the data can be retrieved and analyzed by independent software. EDF(+) software (browsers, checkers, ...) and example files are freely available.
+
+EDF was published in 1992 and stores multichannel data, allowing different sample rates for each signal. Internally it includes a header and one or more data records. The header contains some general information (patient identification, start time...) and technical specs of each signal (calibration, sampling rate, filtering, ...), coded as ASCII characters. The data records contain samples as little-endian 16-bit integers. EDF is a popular format for polysomnography (PSG) recordings.
+
+EDF+ was published in 2003 and is largely compatible to EDF: all existing EDF viewers also show EDF+ signals. But EDF+ files also allow coding discontinuous recordings as well as annotations, stimuli and events in UTF-8 format. EDF+ has applications in PSG, electroencephalography (EEG), electrocardiography (ECG), electromyography (EMG), and Sleep scoring. EDF+ can also be used for nerve conduction studies, evoked potentials and other data acquisition studies.
 
 ## The European Data File Specification
 
