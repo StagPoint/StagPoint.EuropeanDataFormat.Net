@@ -220,8 +220,8 @@ public class EdfFile_Tests
 			var compare = EdfFile.Open( tempFilename );
 			
 			// NOTE: Because the segments we added manually above are contiguous, EdfFile.WriteTo() did
-			// not retain the specified fragments, and instead loads with a single fragment that encompasses
-			// the entire data set. 
+			// not retain the specified fragments, and instead merged them back together.
+			// This is the desired behavior, and is especially useful when appending files.
 			Assert.AreEqual( 1, compare.Fragments.Count );
 		}
 		finally
@@ -311,39 +311,40 @@ public class EdfFile_Tests
 		var file1 = EdfFile.Open( filename1 );
 		var file2 = EdfFile.Open( filename2 );
 		var file3 = EdfFile.Open( filename3 );
-	
-		file1.Append( file2 );
-		file1.Append( file3 );
+
+		var mergedFile = file1.Clone();
+		mergedFile.Append( file2 );
+		mergedFile.Append( file3 );
 		
 		var tempFilename = GetTempFilename();
 
 		try
 		{
 			// Write the file and read it back, for comparison
-			file1.WriteTo( tempFilename );
+			mergedFile.WriteTo( tempFilename );
 			var compare = EdfFile.Open( tempFilename );
 
-			// Should have been assigned EDF+D file type automatically when calling Append with a file that produces a gap
+			// Should have been assigned EDF+D file type automatically when calling Append with any file that results in a gap
 			Assert.AreEqual( EdfFileType.EDF_Plus_Discontinuous, compare.Header.FileType );
 			
 			// Make sure that all auto-generated Fragments were properly written and read back
-			Assert.AreEqual( file1.Fragments.Count, compare.Fragments.Count );
+			Assert.AreEqual( mergedFile.Fragments.Count, compare.Fragments.Count );
 			
 			// Ensure that nothing changed behind the scenes with which Signal samples got saved, and all samples from
 			// all three files got correctly saved. 
-			for( int i = 0; i < file1.Signals.Count; i++ )
+			for( int i = 0; i < mergedFile.Signals.Count; i++ )
 			{
-				Extensions.AssertSignalsSame( file1.Signals[ i ], compare.Signals[ i ], file1.Signals[ i ].SignalPhysicalUnits * 1.001 );
+				Extensions.AssertSignalsSame( mergedFile.Signals[ i ], compare.Signals[ i ], mergedFile.Signals[ i ].SignalPhysicalUnits * 1.001 );
 			}
 
 			// For each Fragment, compare the actual samples from each Signal from the saved file 
-			for( int fragmentIndex = 0; fragmentIndex < file1.Fragments.Count; fragmentIndex++ )
+			for( int fragmentIndex = 0; fragmentIndex < mergedFile.Fragments.Count; fragmentIndex++ )
 			{
-				var fragment = file1.Fragments[ fragmentIndex ];
+				var fragment = mergedFile.Fragments[ fragmentIndex ];
 
-				for( int signalIndex = 0; signalIndex < file1.Signals.Count; signalIndex++ )
+				for( int signalIndex = 0; signalIndex < mergedFile.Signals.Count; signalIndex++ )
 				{
-					var original = file1.Signals[ signalIndex ].GetFragment( fragment );
+					var original = mergedFile.Signals[ signalIndex ].GetFragment( fragment );
 					var test     = compare.Signals[ signalIndex ].GetFragment( fragment );
 
 					CollectionAssert.AreEqual( original, test );
@@ -351,7 +352,7 @@ public class EdfFile_Tests
 			}
 			
 			// Just for good measure, make sure that extracted Fragments match the original non-appended file as well
-			var middleFragment = file1.Fragments[ 1 ];
+			var middleFragment = mergedFile.Fragments[ 1 ];
 			for( int signalIndex = 0; signalIndex < file2.Signals.Count; signalIndex++ )
 			{
 				var original = file2.Signals[ signalIndex ].Samples;

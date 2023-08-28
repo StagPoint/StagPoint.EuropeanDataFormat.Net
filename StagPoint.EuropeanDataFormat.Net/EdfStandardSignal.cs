@@ -84,6 +84,26 @@ namespace StagPoint.EDF.Net
 			return result;
 		}
 
+		/// <summary>
+		/// Copies all of this object's instance data to the other instance
+		/// </summary>
+		public void CopyTo( EdfStandardSignal other )
+		{
+			other.Label.Value                    = Label;
+			other.TransducerType.Value           = TransducerType;
+			other.PhysicalDimension.Value        = PhysicalDimension;
+			other.PhysicalMinimum.Value          = PhysicalMinimum;
+			other.PhysicalMaximum.Value          = PhysicalMaximum;
+			other.DigitalMinimum.Value           = DigitalMinimum;
+			other.DigitalMaximum.Value           = DigitalMaximum;
+			other.Prefiltering.Value             = Prefiltering;
+			other.NumberOfSamplesPerRecord.Value = NumberOfSamplesPerRecord;
+			other.Reserved.Value                 = Reserved;
+			other.FrequencyInHz                  = FrequencyInHz;
+
+			other.Samples.AddRange( Samples );
+		}
+		
 		#endregion
 	}
 }

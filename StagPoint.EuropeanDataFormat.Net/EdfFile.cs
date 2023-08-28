@@ -125,21 +125,7 @@ namespace StagPoint.EDF.Net
 				
 				foreach( var appendAnnotations in fileToAppend.AnnotationSignals )
 				{
-					foreach( var annotation in appendAnnotations.Annotations )
-					{
-						if( !annotation.IsTimeKeepingAnnotation )
-						{
-							var annotationCopy = new EdfAnnotation()
-							{
-								Onset    = annotation.Onset + timeOffset,
-								Duration = annotation.Duration,
-							};
-
-							annotationCopy.AnnotationList.AddRange( annotation.AnnotationList );
-							
-							thisAnnotations.Annotations.Add( annotationCopy );
-						}
-					}
+					appendAnnotations.AppendAnnotations( thisAnnotations.Annotations, false );
 				}
 			}
 
@@ -155,6 +141,31 @@ namespace StagPoint.EDF.Net
 			// additional data. 
 			Header.NumberOfDataRecords.Value += fileToAppend.Header.NumberOfDataRecords;
 			updateFragmentEndIndices();
+		}
+
+		/// <summary>
+		/// Returns a copy of this EdfFile instance
+		/// </summary>
+		public EdfFile Clone()
+		{
+			var newFile = new EdfFile();
+			Header.CopyTo( newFile.Header );
+			
+			newFile.Header.AllocateSignals( newFile.Signals, newFile.AnnotationSignals );
+
+			for( int i = 0; i < Signals.Count; i++ )
+			{
+				Signals[ i ].CopyTo( newFile.Signals[ i ] );
+			}
+
+			for( int i = 0; i < AnnotationSignals.Count; i++ )
+			{
+				AnnotationSignals[ i ].CopyTo( newFile.AnnotationSignals[ i ] );
+			}
+
+			newFile.Fragments.AddRange( this.Fragments );
+
+			return newFile;
 		}
 
 		/// <summary>

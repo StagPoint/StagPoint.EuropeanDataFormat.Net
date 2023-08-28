@@ -59,6 +59,40 @@ namespace StagPoint.EDF.Net
 		}
 		
 		#endregion
+		
+		#region Public functions
+
+		/// <summary>
+		/// Copies all of this object's instance data to the other instance
+		/// </summary>
+		public void CopyTo( EdfAnnotationSignal other, bool includeTimekeepingAnnotations = false )
+		{
+			other.Label.Value                    = Label;
+			other.TransducerType.Value           = TransducerType;
+			other.PhysicalDimension.Value        = PhysicalDimension;
+			other.PhysicalMinimum.Value          = PhysicalMinimum;
+			other.PhysicalMaximum.Value          = PhysicalMaximum;
+			other.DigitalMinimum.Value           = DigitalMinimum;
+			other.DigitalMaximum.Value           = DigitalMaximum;
+			other.Prefiltering.Value             = Prefiltering;
+			other.NumberOfSamplesPerRecord.Value = NumberOfSamplesPerRecord;
+			other.Reserved.Value                 = Reserved;
+
+			AppendAnnotations( other.Annotations, includeTimekeepingAnnotations );
+		}
+
+		internal void AppendAnnotations( List<EdfAnnotation> list, bool includeTimekeepingAnnotations = false )
+		{
+			foreach( var annotation in Annotations )
+			{
+				if( !annotation.IsTimeKeepingAnnotation || includeTimekeepingAnnotations )
+				{
+					list.Add( annotation.Clone() );
+				}
+			}
+		}
+		
+		#endregion
 	}
 
 	/// <summary>
@@ -122,6 +156,23 @@ namespace StagPoint.EDF.Net
 		#endregion 
 		
 		#region Public functions
+
+		/// <summary>
+		/// Returns a deep clone of this instance
+		/// </summary>
+		public EdfAnnotation Clone()
+		{
+			var clone = new EdfAnnotation()
+			{
+				Onset                   = Onset,
+				Duration                = Duration,
+				IsTimeKeepingAnnotation = IsTimeKeepingAnnotation,
+			};
+
+			clone.AnnotationList.AddRange( this.AnnotationList );
+
+			return clone;
+		}
 
 		/// <summary>
 		/// Returns the number of bytes that would be needed to store this Annotation

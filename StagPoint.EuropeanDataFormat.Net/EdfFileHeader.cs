@@ -318,30 +318,30 @@ namespace StagPoint.EDF.Net
 		}
 
 		/// <summary>
-		/// Copies all of this EdfFileHeader instance data to the other instance
+		/// Copies all of this object's instance data to the other instance
 		/// </summary>
-		public void CopyTo( EdfFileHeader header )
+		public void CopyTo( EdfFileHeader other )
 		{
-			header.Version.Value                 = this.Version.Value;
-			header.PatientIdentification.Value   = this.PatientIdentification.Value;
-			header.RecordingIdentification.Value = this.RecordingIdentification.Value;
-			header.StartTime.Value               = this.StartTime.Value;
-			header.HeaderRecordSize.Value        = this.HeaderRecordSize.Value;
-			header.Reserved.Value                = this.Reserved.Value;
-			header.NumberOfDataRecords.Value     = this.NumberOfDataRecords.Value;
-			header.DurationOfDataRecord.Value    = this.DurationOfDataRecord.Value;
-			header.NumberOfSignals.Value         = this.NumberOfSignals.Value;
+			other.Version.Value                 = Version.Value;
+			other.PatientIdentification.Value   = PatientIdentification.Value;
+			other.RecordingIdentification.Value = RecordingIdentification.Value;
+			other.StartTime.Value               = StartTime.Value;
+			other.HeaderRecordSize.Value        = HeaderRecordSize.Value;
+			other.Reserved.Value                = Reserved.Value;
+			other.NumberOfDataRecords.Value     = NumberOfDataRecords.Value;
+			other.DurationOfDataRecord.Value    = DurationOfDataRecord.Value;
+			other.NumberOfSignals.Value         = NumberOfSignals.Value;
 			
-			header.Labels.AddRange( Labels );
-			header.TransducerType.AddRange( TransducerType );
-			header.PhysicalDimension.AddRange( PhysicalDimension );
-			header.PhysicalMinimum.AddRange( PhysicalMinimum );
-			header.PhysicalMaximum.AddRange( PhysicalMaximum );
-			header.DigitalMinimum.AddRange( DigitalMinimum );
-			header.DigitalMaximum.AddRange( DigitalMaximum );
-			header.Prefiltering.AddRange( Prefiltering );
-			header.SamplesPerDataRecord.AddRange( SamplesPerDataRecord );
-			header.SignalReserved.AddRange( SignalReserved );
+			other.Labels.AddRange( Labels );
+			other.TransducerType.AddRange( TransducerType );
+			other.PhysicalDimension.AddRange( PhysicalDimension );
+			other.PhysicalMinimum.AddRange( PhysicalMinimum );
+			other.PhysicalMaximum.AddRange( PhysicalMaximum );
+			other.DigitalMinimum.AddRange( DigitalMinimum );
+			other.DigitalMaximum.AddRange( DigitalMaximum );
+			other.Prefiltering.AddRange( Prefiltering );
+			other.SamplesPerDataRecord.AddRange( SamplesPerDataRecord );
+			other.SignalReserved.AddRange( SignalReserved );
 		}
 		
 		#endregion

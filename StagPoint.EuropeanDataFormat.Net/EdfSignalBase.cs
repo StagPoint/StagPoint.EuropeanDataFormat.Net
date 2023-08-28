@@ -25,16 +25,16 @@ namespace StagPoint.EDF.Net
 
 		internal EdfSignalBase( EdfSignalHeader header )
 		{
-			Label.Value                    = header.Label;
-			TransducerType.Value           = header.TransducerType;
-			PhysicalDimension.Value        = header.PhysicalDimension;
-			PhysicalMinimum.Value          = header.PhysicalMinimum;
-			PhysicalMaximum.Value          = header.PhysicalMaximum;
-			DigitalMinimum.Value           = header.DigitalMinimum;
-			DigitalMaximum.Value           = header.DigitalMaximum;
-			Prefiltering.Value             = header.Prefiltering;
-			NumberOfSamplesPerRecord.Value = header.NumberOfSamplesPerRecord;
-			Reserved.Value                 = header.Reserved;
+			Label.Value                    = header.Label.Value;
+			TransducerType.Value           = header.TransducerType.Value;
+			PhysicalDimension.Value        = header.PhysicalDimension.Value;
+			PhysicalMinimum.Value          = header.PhysicalMinimum.Value;
+			PhysicalMaximum.Value          = header.PhysicalMaximum.Value;
+			DigitalMinimum.Value           = header.DigitalMinimum.Value;
+			DigitalMaximum.Value           = header.DigitalMaximum.Value;
+			Prefiltering.Value             = header.Prefiltering.Value;
+			NumberOfSamplesPerRecord.Value = header.NumberOfSamplesPerRecord.Value;
+			Reserved.Value                 = header.Reserved.Value;
 		}
 		
 		#endregion 

@@ -78,13 +78,16 @@ namespace StagPoint.EDF.Net
 
 		#region Base class overrides and implicit type conversion
 
+		/// <inheritdoc />
 		public override string ToString()
 		{
 			return _value;
 		}
 
+		/// <inheritdoc />
 		public static implicit operator string( EdfAsciiString field )
 		{
+			// It may be tempting to change this function to return the _value field directly. Don't. Subclasses rely on calling ToString(). 
 			return field.ToString();
 		}
 
