@@ -4,7 +4,7 @@ namespace StagPoint.Edf.Tests;
 
 public class Extensions
 {
-	public static void AssertSignalsSame( EdfStandardSignal expected, EdfStandardSignal actual, double delta = 0.001, string message = null )
+	public static void AssertSignalsSame( EdfStandardSignal expected, EdfStandardSignal actual, double delta = 0.001, string message = "" )
 	{
 		Assert.AreEqual( expected.Label.Value,           actual.Label );
 		Assert.AreEqual( expected.PhysicalMaximum.Value, actual.PhysicalMaximum );

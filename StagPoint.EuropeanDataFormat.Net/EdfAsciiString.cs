@@ -16,6 +16,10 @@ namespace StagPoint.EDF.Net
 	{
 		#region Public properties
 
+		/// <summary>
+		/// Gets or sets the string value stored in the field
+		/// </summary>
+		/// <exception cref="ArgumentNullException">You may not assign NULL (use string.Empty instead)</exception>
 		public virtual string Value
 		{
 			get { return _value; }
@@ -41,8 +45,14 @@ namespace StagPoint.EDF.Net
 
 		#region Constructors
 
+		/// <inheritdoc />
 		public EdfAsciiString( int fieldLength ) : base( fieldLength ) { }
 
+		/// <summary>
+		/// Initializes a new instance of the EdfAsciiString field 
+		/// </summary>
+		/// <param name="fieldLength">The length of the ASCII string used to store this field's value <see cref="EdfAsciiField.FieldLength"/></param>
+		/// <param name="value">The initial value of this field</param>
 		public EdfAsciiString( int fieldLength, string value )
 			: base( fieldLength )
 		{
@@ -59,6 +69,7 @@ namespace StagPoint.EDF.Net
 
 		#region EdfAsciiField overrides
 
+		/// <inheritdoc />
 		internal override void WriteTo( BinaryWriter buffer )
 		{
 			if( Value == null )
@@ -69,6 +80,7 @@ namespace StagPoint.EDF.Net
 			BufferHelper.WriteToBuffer( buffer, Value, FieldLength );
 		}
 
+		/// <inheritdoc />
 		internal override void ReadFrom( BinaryReader buffer )
 		{
 			_value = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
@@ -84,7 +96,9 @@ namespace StagPoint.EDF.Net
 			return _value;
 		}
 
-		/// <inheritdoc />
+		/// <summary>
+		/// Returns the string representation of the value of the field 
+		/// </summary>
 		public static implicit operator string( EdfAsciiString field )
 		{
 			// It may be tempting to change this function to return the _value field directly. Don't. Subclasses rely on calling ToString(). 

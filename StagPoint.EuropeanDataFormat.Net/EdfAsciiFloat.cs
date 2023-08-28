@@ -5,11 +5,16 @@ using System.IO;
 
 namespace StagPoint.EDF.Net
 {
-
+	/// <summary>
+	/// An EDF Field whose floating point value is stored in the header as a fixed-length ASCII string
+	/// </summary>
 	public class EdfAsciiFloat : EdfAsciiField
 	{
 		#region Public properties
 
+		/// <summary>
+		/// Gets or sets the floating point value of this field 
+		/// </summary>
 		public double Value { get; set; }
 
 		#endregion
@@ -23,9 +28,18 @@ namespace StagPoint.EDF.Net
 
 		#region Constructors
 
+		/// <summary>
+		/// Initializes a new instance of the EdfAsciiFloat class
+		/// </summary>
+		/// <param name="fieldLength">The length of the ASCII string used to store this field's value <see cref="EdfAsciiField.FieldLength"/></param>
 		public EdfAsciiFloat( int fieldLength ) : base( fieldLength ) { }
 
-		public EdfAsciiFloat( int fieldLength, double value, bool requireSignPrefix = false )
+		/// <summary>
+		/// Initializes a new instance of the EdfAsciiFloat class
+		/// </summary>
+		/// <param name="fieldLength">The length of the ASCII string used to store this field's value <see cref="EdfAsciiField.FieldLength"/></param>
+		/// <param name="value">The initial floating point value of this field</param>
+		public EdfAsciiFloat( int fieldLength, double value )
 			: this( fieldLength )
 		{
 			this.Value = value;
@@ -35,6 +49,7 @@ namespace StagPoint.EDF.Net
 
 		#region EdfAsciiField overrides
 
+		/// <inheritdoc />
 		internal override void ReadFrom( BinaryReader buffer )
 		{
 			var temp = BufferHelper.ReadFromBuffer( buffer, this.FieldLength );
@@ -42,6 +57,7 @@ namespace StagPoint.EDF.Net
 			this.Value = double.Parse( temp );
 		}
 
+		/// <inheritdoc />
 		internal override void WriteTo( BinaryWriter buffer )
 		{
 			// From the specification: Never use any digit grouping symbol in numbers.
@@ -57,11 +73,15 @@ namespace StagPoint.EDF.Net
 
 		#region Base class overrides and implicit type conversion
 	
+		/// <inheritdoc />
 		public override string ToString()
 		{
 			return Value.ToString( CultureInfo.InvariantCulture );
 		}
 
+		/// <summary>
+		/// Returns the double-precision floating point value stored in the field
+		/// </summary>
 		public static implicit operator double( EdfAsciiFloat field )
 		{
 			return field.Value;

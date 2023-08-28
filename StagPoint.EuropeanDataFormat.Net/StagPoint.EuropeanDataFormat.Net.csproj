@@ -22,12 +22,14 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageProjectUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/main/LICENSE</PackageLicenseUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryUrl>https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
         <PackageTags>EDF, EDF+, European Data Format, File Format, Medical File Format</PackageTags>
         <PackageIcon>edf_edfplus_icon.png</PackageIcon>
         <PackageReleaseNotes>First public release.</PackageReleaseNotes>
+        <AssemblyVersion>1.0</AssemblyVersion>
+        <FileVersion>1.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,5 +37,9 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </AdditionalFiles>
         <None Include="edf_edfplus_icon.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
     </ItemGroup>
 </Project>

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.Versioning;
-
-using StagPoint.EDF.Net;
+﻿using StagPoint.EDF.Net;
 
 namespace StagPoint.Edf.Tests;
 
@@ -191,10 +188,6 @@ public class EdfFile_Tests
 		// Make sure that we're starting out with a contiguous file
 		Assert.IsTrue( file.FileType != EdfFileType.EDF_Plus_Discontinuous );
 
-		const int NUMBER_OF_SEGMENTS = 4;
-
-		var totalTime = file.Header.NumberOfDataRecords * file.Header.DurationOfDataRecord;
-
 		// Split the file into four still contiguous segments by marking the start of each segment
 		for( int i = 0; i < 4; i++ )
 		{
@@ -245,8 +238,6 @@ public class EdfFile_Tests
 		Assert.IsTrue( file.FileType != EdfFileType.EDF_Plus_Discontinuous );
 
 		const double GAP_SIZE = 5.0;
-
-		var totalTime = file.Header.NumberOfDataRecords * file.Header.DurationOfDataRecord;
 
 		// Split the file into four still discontiguous segments by marking the start of each segment
 		// with a five second gap between each
