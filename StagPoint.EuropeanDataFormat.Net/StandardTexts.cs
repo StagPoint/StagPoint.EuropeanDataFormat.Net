@@ -12,8 +12,24 @@ namespace StagPoint.EDF.Net
 		/// </summary>
 		public static class FileType
 		{
-			public const string EDF                    = "";
-			public const string EDF_Plus_Continuous    = "EDF+C";
+			/// <summary>
+			/// By default, the file type is not specified in legacy EDF files 
+			/// </summary>
+			public const string EDF = "";
+
+			/// <summary>
+			/// Some EDF files (like those written by ResMed AirSense CPAP machines) explicitly specify "EDF" 
+			/// </summary>
+			public const string EDF_Explicit = "EDF";
+
+			/// <summary>
+			/// Indicates an EDF+ file where all Data Records are stored contiguously 
+			/// </summary>
+			public const string EDF_Plus_Continuous = "EDF+C";
+			
+			/// <summary>
+			/// Indicates and EDF+ file where there may be gaps in time between Data Records
+			/// </summary>
 			public const string EDF_Plus_Discontinuous = "EDF+D";
 		}
 		

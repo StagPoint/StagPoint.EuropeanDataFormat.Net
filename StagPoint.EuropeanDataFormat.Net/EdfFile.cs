@@ -327,54 +327,63 @@ namespace StagPoint.EDF.Net
 				Header.WriteTo( writer );
                 
 				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
-				var counters           = new int[ Signals.Count ];
-				var annotationCounters = new int[ AnnotationSignals.Count ];
+				var counters = new int[ Signals.Count + AnnotationSignals.Count ];
 
 				var dataRecordStartTime = 0.0;
 
 				bool continueWritingSignals     = true;
 				bool continueWritingAnnotations = true;
+				bool isFirstAnnotationSignal    = true;
 
 				while( continueWritingSignals || continueWritingAnnotations )
 				{
 					// Assume that we are done unless proven otherwise (allows us to use boolean "OR" operation below)
 					continueWritingSignals     = false;
 					continueWritingAnnotations = false;
+
+					// Use a flag to keep track of the first Annotation Signal written on each pass 
+					// Only the first AnnotationSignal stores timekeeping annotations
+					isFirstAnnotationSignal = true;
+
+					for( int i = 0; i < Header.Labels.Count; i++ )
+					{
+						var baseSignal = GetSignalByName( Header.Labels[ i ].Value );
+
+						var standardSignal = baseSignal as EdfStandardSignal;
+
+						if( standardSignal != null )
+						{
+							counters[ i ]          += writeStandardSignal( writer, standardSignal, counters[ i ] );
+							continueWritingSignals |= counters[ i ] < standardSignal.Samples.Count;
+						}
+						else
+						{
+							var annotationSignal = baseSignal as EdfAnnotationSignal;
+
+							if( !isEdfPlusFile )
+							{
+								throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
+							}
+
+							var fragmentMarker = Fragments.FirstOrDefault( x => x.StartRecordIndex == Header.NumberOfDataRecords.Value );
+							if( fragmentMarker != null )
+							{
+								dataRecordStartTime = fragmentMarker.StartTime;
+							}
+
+							counters[ i ] = writeAnnotationSignal(
+								writer,
+								annotationSignal,
+								counters[ i ],
+								isFirstAnnotationSignal,  
+								dataRecordStartTime
+							);
+
+							continueWritingAnnotations |= counters[ i ] < annotationSignal.Annotations.Count;
+							isFirstAnnotationSignal    =  false;
+						}
+					}
 					
-					for( int i = 0; i < Signals.Count; i++ )
-					{
-						var standardSignal = Signals[ i ];
-						
-						counters[ i ]          += writeStandardSignal( writer, standardSignal, counters[ i ] );
-						continueWritingSignals |= counters[ i ] < standardSignal.Samples.Count;
-					}
-
-					for( int i = 0; i < AnnotationSignals.Count; i++ )
-					{
-						if( !isEdfPlusFile )
-						{
-							throw new Exception( "The file must be marked as an EDF+ file to use annotations" );
-						}
-
-						var fragmentMarker = Fragments.FirstOrDefault( x => x.StartRecordIndex == Header.NumberOfDataRecords.Value );
-						if( fragmentMarker != null )
-						{
-							dataRecordStartTime = fragmentMarker.StartTime;
-						}
-
-						var annotationSignal = AnnotationSignals[ i ];
-						
-						annotationCounters[ i ] = writeAnnotationSignal(
-							writer,
-							annotationSignal,
-							annotationCounters[ i ],
-							i == 0, // Only the first AnnotationSignal stores timekeeping annotations 
-							dataRecordStartTime
-						);
-						
-						continueWritingAnnotations |= annotationCounters[ i ] < annotationSignal.Annotations.Count;
-					}
-
 					// If there are ordinary signals present in the file (this is not an "Annotations Only" file), and
 					// all signal data has been written to the file but there is still annotation data remaining to be
 					// written, raise an exception. 
@@ -384,13 +393,13 @@ namespace StagPoint.EDF.Net
 					{
 						throw new Exception( "Not enough space has been allocated for Annotations to be stored in the same number of Data Records as ordinary Signals" );
 					}
-
+					
 					// Keep track of the expected start time of the next Data Record 
 					// This allows us to know when the next data record is not contiguous.
 					dataRecordStartTime              += Header.DurationOfDataRecord;
 					Header.NumberOfDataRecords.Value += 1;
 				}
-				
+
 				// Patch up the NumberOfDataRecords by seeking to the position of the field and overwriting the value. 
 				// We could easily make this a constant, but it isn't performance-critical and this is very easy to 
 				// read and understand.
@@ -409,6 +418,59 @@ namespace StagPoint.EDF.Net
 					file.Position = savedPosition;
 				}
 			}
+		}
+		
+		/// <summary>
+		/// Finds and returns the named Signal. 
+		/// </summary>
+		public EdfSignalBase GetSignalByName( string name )
+		{
+			// ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+			foreach( var signal in Signals )
+			{
+				if( string.Compare( signal.Label.Value, name, StringComparison.Ordinal ) == 0 )
+				{
+					return signal;
+				}
+			}
+
+			// NOTE: Since all Annotation Signals *must* have the same name, this function can only ever return
+			// the first one. It is highly likely that there will only ever be a single Annotation Signal, but 
+			// that is not a requirement.
+			if( string.Compare( name, StandardTexts.SignalType.EdfAnnotations, StringComparison.Ordinal ) == 0 )
+			{
+				return AnnotationSignals.Count > 0 ? AnnotationSignals[ 0 ] : null;
+			}
+			
+			return null;
+		}
+		
+		/// <summary>
+		/// Finds and returns the named Signal. 
+		/// </summary>
+		public T GetSignalByName<T>( string name ) where T : EdfSignalBase
+		{
+			// ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+			if( typeof( T ) == typeof( EdfStandardSignal ) )
+			{
+				foreach( var signal in Signals )
+				{
+					if( string.Compare( signal.Label.Value, name, StringComparison.Ordinal ) == 0 )
+					{
+						return signal as T;
+					}
+				}
+			}
+
+			// NOTE: Since all Annotation Signals *must* have the same name, this function can only ever return
+			// the first one. It is highly likely that there will only ever be a single Annotation Signal, but 
+			// that is not a requirement.
+			if( string.Compare( name, StandardTexts.SignalType.EdfAnnotations, StringComparison.Ordinal ) == 0 )
+			{
+				return AnnotationSignals.Count > 0 ? AnnotationSignals[ 0 ] as T : null;
+			}
+
+			return null;
 		}
 		
 		#endregion
@@ -632,13 +694,31 @@ namespace StagPoint.EDF.Net
 			var    isFirstAnnotationSignal = true;
 			double recordedStartTime       = expectedStartTime;
 
-			foreach( var signal in Signals )
+			foreach( var label in Header.Labels )
 			{
-				readStandardSignal( reader, signal );
-			}
-			
-			foreach( var signal in AnnotationSignals )
-			{
+				// Because the Standard Signals and Annotation Signals may be in any order, but I've chosen to store them
+				// in separate Lists for user convenience, we need to iterate them in order of declaration and cast to the
+				// appropriate type. 
+				// One example of an Annotation Signal coming first is with ResMed AirSense 10 CPAP machine data files, 
+				// where the two signals in one of the files are the Annotations and the CRC values, in that order. 
+				var search = GetSignalByName( label.Value );
+				
+				// Sanity check. This shouldn't even be a possible situation, but should probably be checked anyways in
+				// case someone modifies the header file and it's out of sync with the signals, maybe?
+				if( search == null )
+				{
+					throw new KeyNotFoundException( $"Could not find the Signal named '{label.Value}'" );
+				}
+				
+				// ReSharper disable once MergeCastWithTypeCheck
+				if( search is EdfStandardSignal )
+				{
+					readStandardSignal( reader, (EdfStandardSignal)search );
+					continue;
+				}
+
+				var signal = (EdfAnnotationSignal)search;
+				
 				//
 				// If the file contains discontinuous data, we need to read the timekeeping annotation of each
 				// data record and use that value instead.
@@ -699,7 +779,7 @@ namespace StagPoint.EDF.Net
 			// Keep track of the (potentially changed) expected start time. 
 			expectedStartTime = recordedStartTime + Header.DurationOfDataRecord;
 		}
-		
+
 		private void readAnnotationSignal( BinaryReader reader, EdfAnnotationSignal signal, bool expectTimekeepingAnnotation, ref double startTime )
 		{
 			// Read NumberOfSamplesPerRecord 2-byte 'samples' into a local memory buffer, which we will parse
@@ -755,9 +835,8 @@ namespace StagPoint.EDF.Net
 						break;
 					}
 
-					string description   = parseString( ref position );
-					string linkedChannel = null;
-
+					string description = parseString( ref position );
+					
 					var channelIndex = description.IndexOf( "@@", StringComparison.Ordinal );
 					if( channelIndex != -1 )
 					{

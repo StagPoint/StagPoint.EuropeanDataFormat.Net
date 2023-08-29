@@ -134,7 +134,7 @@ namespace StagPoint.EDF.Net
 			get
 			{
 				// ReSharper disable once ConvertIfStatementToSwitchStatement
-				if( string.IsNullOrEmpty( Reserved.Value ) )
+				if( string.IsNullOrEmpty( Reserved.Value ) || Reserved.Value == StandardTexts.FileType.EDF_Explicit )
 					return EdfFileType.EDF;
 				else if( Reserved.Value == StandardTexts.FileType.EDF_Plus_Continuous )
 					return EdfFileType.EDF_Plus;

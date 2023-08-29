@@ -215,53 +215,6 @@ public class EdfFileHeader_Tests
 		Assert.AreEqual( 11, header.NumberOfSignals );
 	}
 
-	[TestMethod]
-	public void TestSignalLerp()
-	{
-		// Demonstrates the method used to encode Signal values, and the relationship between
-		// PhysicalMinimum, PhysicalMaximum and DigitalMinimum, DigitalMaximum
-		
-		var physMax = (double)short.MaxValue;
-		var physMin = (double)short.MinValue;
-		var digiMax = 255;
-		var digiMin = 0;
-
-		for( int i = 0; i < 10; i++ )
-		{
-			var value = Random.Shared.Next( digiMin, digiMax );
-
-			var invT              = inverseLerp( digiMin, digiMax, value );
-			var interpolatedValue = lerp( physMin, physMax, invT );
-
-			Debug.WriteLine( $"{value} -> {interpolatedValue}" );
-
-		}
-
-		physMax = 0;
-		physMin = 1024;
-		
-		for( int i = 0; i < 10; i++ )
-		{
-			var value = Random.Shared.Next( digiMin, digiMax );
-
-			var invT              = inverseLerp( digiMin, digiMax, value );
-			var interpolatedValue = lerp( physMin, physMax, invT );
-
-			Debug.WriteLine( $"{value} -> {interpolatedValue}" );
-
-		}
-
-		float inverseLerp( double a, double b, double value )
-		{
-			return (float)((value - a) / (b - a));
-		}
-
-		double lerp( double a, double b, float t )
-		{
-			return (1.0 - t) * a + b * t;
-		}
-	}
-	
 	#region Utility functions
 
 	private bool listsAreEqual<T>( List<T> source, List<T> compare ) where T : EdfAsciiField

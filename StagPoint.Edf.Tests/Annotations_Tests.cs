@@ -32,7 +32,7 @@ public class Annotations_Tests
 	}
 
 	[TestMethod]
-	public void RoundTripAllAnnotationsS()
+	public void RoundTripAllAnnotations()
 	{
 		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations.edf" );
 		if( !File.Exists( filename ) )

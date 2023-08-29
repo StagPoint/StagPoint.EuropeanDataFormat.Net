@@ -1,3 +1,0 @@
-Onset,Annotation
-+0.0000000,Recording starts
-+600.0000000,Recording ends
