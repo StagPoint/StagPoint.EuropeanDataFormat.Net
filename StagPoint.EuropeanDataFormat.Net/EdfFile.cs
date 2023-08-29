@@ -6,7 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 // ReSharper disable ConvertToUsingDeclaration
+// ReSharper disable UsePatternMatching
 
 namespace StagPoint.EDF.Net
 {
@@ -252,10 +254,17 @@ namespace StagPoint.EDF.Net
 				// Keeping track of the "expected start time" allows detection of discontinuous files 
 				double expectedRecordStartTime = 0;
 			
+				// Gather all of the signals (in declared order) into a single index-able array
+				var allSignals = new EdfSignalBase[ Header.Labels.Count ];
+				for( int i = 0; i < allSignals.Length; i++ )
+				{
+					allSignals[ i ] = GetSignalByName( Header.Labels[ i ].Value );
+				}
+
 				// Read in all Data Records stored. 
 				for( int i = 0; i < Header.NumberOfDataRecords; i++ )
 				{
-					readDataRecord( reader, i, fileType, ref expectedRecordStartTime );
+					readDataRecord( reader, allSignals, i, fileType, ref expectedRecordStartTime );
 				}
 				
 				// Make sure that all EdfFileFragments are updated 
@@ -313,7 +322,7 @@ namespace StagPoint.EDF.Net
 				signal.Annotations.RemoveAll( x => x.IsTimeKeepingAnnotation );
 			}
 			
-			using( var writer = new BinaryWriter( file, Encoding.ASCII ) )
+			using( var writer = new BinaryWriter( file, Encoding.ASCII, true ) )
 			{
 				// We don't know the number of DataRecords written yet. This value will be overwritten below. 
 				// It's easy enough to calculate for files that contain only ordinary signals, but not for 
@@ -326,8 +335,15 @@ namespace StagPoint.EDF.Net
 				// Write the header information 
 				Header.WriteTo( writer );
                 
+				// Gather all of the signals (in declared order) into a single index-able array
+				var allSignals = new EdfSignalBase[ Header.Labels.Count ];
+				for( int i = 0; i < allSignals.Length; i++ )
+				{
+					allSignals[ i ] = GetSignalByName( Header.Labels[ i ].Value );
+				}
+
 				// Keep track of a counter per signal which counts how many samples from that signal have been written so far
-				var counters = new int[ Signals.Count + AnnotationSignals.Count ];
+				var counters = new int[ allSignals.Length ];
 
 				var dataRecordStartTime = 0.0;
 
@@ -345,10 +361,9 @@ namespace StagPoint.EDF.Net
 					// Only the first AnnotationSignal stores timekeeping annotations
 					isFirstAnnotationSignal = true;
 
-					for( int i = 0; i < Header.Labels.Count; i++ )
+					for( int i = 0; i < allSignals.Length; i++ )
 					{
-						var baseSignal = GetSignalByName( Header.Labels[ i ].Value );
-
+						var baseSignal     = allSignals[ i ];
 						var standardSignal = baseSignal as EdfStandardSignal;
 
 						if( standardSignal != null )
@@ -358,7 +373,7 @@ namespace StagPoint.EDF.Net
 						}
 						else
 						{
-							var annotationSignal = baseSignal as EdfAnnotationSignal;
+							var annotationSignal = (EdfAnnotationSignal)baseSignal;
 
 							if( !isEdfPlusFile )
 							{
@@ -423,12 +438,14 @@ namespace StagPoint.EDF.Net
 		/// <summary>
 		/// Finds and returns the named Signal. 
 		/// </summary>
-		public EdfSignalBase GetSignalByName( string name )
+		public EdfSignalBase GetSignalByName( string name, bool ignoreCase = false )
 		{
+			StringComparison comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
 			// ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
 			foreach( var signal in Signals )
 			{
-				if( string.Compare( signal.Label.Value, name, StringComparison.Ordinal ) == 0 )
+				if( string.Compare( signal.Label.Value, name, comparison ) == 0 )
 				{
 					return signal;
 				}
@@ -437,39 +454,11 @@ namespace StagPoint.EDF.Net
 			// NOTE: Since all Annotation Signals *must* have the same name, this function can only ever return
 			// the first one. It is highly likely that there will only ever be a single Annotation Signal, but 
 			// that is not a requirement.
-			if( string.Compare( name, StandardTexts.SignalType.EdfAnnotations, StringComparison.Ordinal ) == 0 )
+			if( string.Compare( name, StandardTexts.SignalType.EdfAnnotations, comparison ) == 0 )
 			{
 				return AnnotationSignals.Count > 0 ? AnnotationSignals[ 0 ] : null;
 			}
 			
-			return null;
-		}
-		
-		/// <summary>
-		/// Finds and returns the named Signal. 
-		/// </summary>
-		public T GetSignalByName<T>( string name ) where T : EdfSignalBase
-		{
-			// ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-			if( typeof( T ) == typeof( EdfStandardSignal ) )
-			{
-				foreach( var signal in Signals )
-				{
-					if( string.Compare( signal.Label.Value, name, StringComparison.Ordinal ) == 0 )
-					{
-						return signal as T;
-					}
-				}
-			}
-
-			// NOTE: Since all Annotation Signals *must* have the same name, this function can only ever return
-			// the first one. It is highly likely that there will only ever be a single Annotation Signal, but 
-			// that is not a requirement.
-			if( string.Compare( name, StandardTexts.SignalType.EdfAnnotations, StringComparison.Ordinal ) == 0 )
-			{
-				return AnnotationSignals.Count > 0 ? AnnotationSignals[ 0 ] as T : null;
-			}
-
 			return null;
 		}
 		
@@ -687,28 +676,21 @@ namespace StagPoint.EDF.Net
 			return position;
 		}
 		
-		private void readDataRecord( BinaryReader reader, int index, EdfFileType fileType, ref double expectedStartTime )
+		private void readDataRecord( BinaryReader reader, EdfSignalBase[] signals, int dataRecordIndex, EdfFileType fileType, ref double expectedStartTime )
 		{
 			// The first annotation of the first 'EDF Annotations' signal in each data record is empty, but its timestamp specifies
 			// how many seconds after the file start time that data record starts.
 			var    isFirstAnnotationSignal = true;
 			double recordedStartTime       = expectedStartTime;
 
-			foreach( var label in Header.Labels )
+			for( int i = 0; i < signals.Length; i++ )
 			{
 				// Because the Standard Signals and Annotation Signals may be in any order, but I've chosen to store them
 				// in separate Lists for user convenience, we need to iterate them in order of declaration and cast to the
 				// appropriate type. 
 				// One example of an Annotation Signal coming first is with ResMed AirSense 10 CPAP machine data files, 
 				// where the two signals in one of the files are the Annotations and the CRC values, in that order. 
-				var search = GetSignalByName( label.Value );
-				
-				// Sanity check. This shouldn't even be a possible situation, but should probably be checked anyways in
-				// case someone modifies the header file and it's out of sync with the signals, maybe?
-				if( search == null )
-				{
-					throw new KeyNotFoundException( $"Could not find the Signal named '{label.Value}'" );
-				}
+				var search = signals[ i ];
 				
 				// ReSharper disable once MergeCastWithTypeCheck
 				if( search is EdfStandardSignal )
@@ -745,7 +727,7 @@ namespace StagPoint.EDF.Net
 					if( Fragments.Count == 0 )
 					{
 						// Add a new fragment when necessary
-						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
+						Fragments.Add( new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord )
 						{
 							StartTime = expectedStartTime,
 						} );
@@ -756,7 +738,7 @@ namespace StagPoint.EDF.Net
 					if( fileType == EdfFileType.EDF_Plus_Discontinuous )
 					{
 						// Start a new fragment 
-						Fragments.Add( new EdfDataFragment( index, Header.DurationOfDataRecord )
+						Fragments.Add( new EdfDataFragment( dataRecordIndex, Header.DurationOfDataRecord )
 						{
 							StartTime = recordedStartTime,
 						} );
@@ -768,7 +750,7 @@ namespace StagPoint.EDF.Net
 						// since there are no signals, timing is irrelevant. 
 						if( Header.DurationOfDataRecord > 0 && Signals.Count > 0 )
 						{
-							throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {index}), but File Type is not marked as EDF+D" );
+							throw new Exception( $"Data Records are not contiguous ({recordedStartTime - expectedStartTime}s gap encountered at record {dataRecordIndex}), but File Type is not marked as EDF+D" );
 						}
 					}
 				}
