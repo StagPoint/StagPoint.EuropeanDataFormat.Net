@@ -21,18 +21,21 @@ namespace StagPoint.EDF.Net
 		/// Returns the number of samples per second contained in this Signal.
 		/// </summary>
 		public double FrequencyInHz { get; internal set; }
-		
+
 		/// <summary>
-		/// Calculates and returns the signal sensitivity (Units/bit) as defined by the four parameters
+		/// Calculates and returns the signal's physical units as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double SignalPhysicalUnits { get => (PhysicalMaximum - PhysicalMinimum) / ((double)DigitalMaximum - DigitalMinimum); }
+		public double SignalGain
+		{
+			get => (PhysicalMaximum.Value - PhysicalMinimum.Value) / ((double)DigitalMaximum.Value - DigitalMinimum.Value);
+		}
 		
 		/// <summary>
 		/// Calculates and returns the signal offset as defined by the four parameters
 		/// PhysicalMaximum, PhysicalMinimum, DigitalMaximum, and DigitalMinimum.
 		/// </summary>
-		public double SignalOffset { get => (PhysicalMaximum / SignalPhysicalUnits) - DigitalMaximum; }
+		public double SignalOffset { get => (PhysicalMaximum / SignalGain) - DigitalMaximum; }
 
 		#endregion
 		

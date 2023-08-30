@@ -516,9 +516,8 @@ namespace StagPoint.EDF.Net
 			// Write as many samples as possible, up to NumberOfSamplesPerRecord 
 			while( position < signal.Samples.Count && samplesWritten < signal.NumberOfSamplesPerRecord )
 			{
-				var    sample      = signal.Samples[ position ];
-				double inverseT    = MathUtil.InverseLerp( signal.PhysicalMinimum, signal.PhysicalMaximum, sample );
-				short  outputValue = (short)MathUtil.Lerp( signal.DigitalMinimum, signal.DigitalMaximum, inverseT );
+				var   sample      = signal.Samples[ position ];
+				short outputValue = (short)(sample / signal.SignalGain - signal.SignalOffset);
 
 				writer.Write( outputValue );
 
@@ -894,16 +893,14 @@ namespace StagPoint.EDF.Net
 		
 		private void readStandardSignal( BinaryReader reader, EdfStandardSignal signal )
 		{
+			// TODO: Implement support for logarithmic transformation (https://www.edfplus.info/specs/edffloat.html)
+
 			for( int i = 0; i < signal.NumberOfSamplesPerRecord; i++ )
 			{
-				var sample = reader.ReadInt16();
+				var sample      = reader.ReadInt16();
+				var scaledValue = signal.SignalGain * (sample + signal.SignalOffset);
 				
-				// TODO: Implement support for logarithmic transformation (https://www.edfplus.info/specs/edffloat.html)
-				
-				var t     = MathUtil.InverseLerp( signal.DigitalMinimum, signal.DigitalMaximum, sample );
-				var value = MathUtil.Lerp( signal.PhysicalMinimum, signal.PhysicalMaximum, t );
-				
-				signal.Samples.Add( value );
+				signal.Samples.Add( scaledValue );
 			}
 		}
 		

@@ -1,4 +1,6 @@
-﻿using StagPoint.EDF.Net;
+﻿using System.Diagnostics;
+
+using StagPoint.EDF.Net;
 
 namespace StagPoint.Edf.Tests;
 
@@ -55,7 +57,7 @@ public class EdfFile_Tests
 			Assert.IsNotNull( compareFile.Signals.First( x => x.Label.Value == StandardTexts.SignalType.OxygenSaturation ) );
 			Assert.IsNotNull( compareFile.AnnotationSignals.First( x => x.Label.Value == StandardTexts.SignalType.EdfAnnotations ) );
 
-			Extensions.AssertSignalsSame( file.Signals[ 0 ], compareFile.Signals[ 0 ], file.Signals[ 0 ].SignalPhysicalUnits * 1.001 );
+			Extensions.AssertSignalsSame( file.Signals[ 0 ], compareFile.Signals[ 0 ], file.Signals[ 0 ].SignalGain * 1.001 );
 		}
 		finally
 		{
@@ -165,7 +167,7 @@ public class EdfFile_Tests
 			// Ensure that nothing changed behind the scenes with which Signal samples got saved.
 			for( int i = 0; i < file.Signals.Count; i++ )
 			{
-				Extensions.AssertSignalsSame( file.Signals[ i ], compare.Signals[ i ], signal.SignalPhysicalUnits * 1.001 );
+				Extensions.AssertSignalsSame( file.Signals[ i ], compare.Signals[ i ], signal.SignalGain * 1.001 );
 			}
 		}
 		finally
@@ -325,7 +327,7 @@ public class EdfFile_Tests
 			// all three files got correctly saved. 
 			for( int i = 0; i < mergedFile.Signals.Count; i++ )
 			{
-				Extensions.AssertSignalsSame( mergedFile.Signals[ i ], compare.Signals[ i ], mergedFile.Signals[ i ].SignalPhysicalUnits * 1.001 );
+				Extensions.AssertSignalsSame( mergedFile.Signals[ i ], compare.Signals[ i ], mergedFile.Signals[ i ].SignalGain * 1.001 );
 			}
 
 			// For each Fragment, compare the actual samples from each Signal from the saved file 
