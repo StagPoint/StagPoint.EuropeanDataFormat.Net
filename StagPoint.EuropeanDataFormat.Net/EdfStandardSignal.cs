@@ -28,7 +28,11 @@ namespace StagPoint.EDF.Net
 		/// </summary>
 		public double SignalGain
 		{
-			get => (PhysicalMaximum.Value - PhysicalMinimum.Value) / ((double)DigitalMaximum.Value - DigitalMinimum.Value);
+			get
+			{
+
+				return (PhysicalMaximum.Value - PhysicalMinimum.Value) / ((double)DigitalMaximum.Value - DigitalMinimum.Value);
+			}
 		}
 		
 		/// <summary>

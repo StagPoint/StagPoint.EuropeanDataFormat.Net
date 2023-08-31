@@ -19,6 +19,7 @@
         <PackageReference Include="MSTest.TestAdapter" Version="2.2.10"/>
         <PackageReference Include="MSTest.TestFramework" Version="2.2.10"/>
         <PackageReference Include="coverlet.collector" Version="3.2.0"/>
+        <PackageReference Include="SharpZipLib" Version="1.4.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -103,6 +104,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Test Files\PulseOximetry3.EDF">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Test Files\annotations_and_signals.zip">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

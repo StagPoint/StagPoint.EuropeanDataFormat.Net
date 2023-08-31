@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 
+using ICSharpCode.SharpZipLib.Zip;
+
 using StagPoint.EDF.Net;
 
 namespace StagPoint.Edf.Tests;
@@ -357,6 +359,36 @@ public class EdfFile_Tests
 		finally
 		{
 			File.Delete( tempFilename );
+		}
+	}
+
+	[TestMethod]
+	public void ReadFromCompressedArchive()
+	{
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations_and_signals.zip" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		using( ZipFile zipFile = new ZipFile( filename ) )
+		{
+			foreach( ZipEntry entry in zipFile )
+			{
+				using( var stream = zipFile.GetInputStream( entry ) )
+				{
+					var file = new EdfFile();
+					file.ReadFrom( stream );
+
+					Assert.AreEqual( 11, file.Signals.Count );
+
+					foreach( var signal in file.Signals )
+					{
+						Assert.AreEqual( 120000, signal.Samples.Count );
+						Debug.WriteLine( $"Signal: {signal.Label}, Samples: {signal.Samples.Count}" );
+					}
+				}
+			}
 		}
 	}
 
