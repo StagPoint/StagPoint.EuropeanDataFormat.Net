@@ -363,6 +363,27 @@ public class EdfFile_Tests
 	}
 
 	[TestMethod]
+	public void CannotReadFileWithInvalidDataRecordCount()
+	{
+		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "Invalid DataRecord Count.edf" );
+		if( !File.Exists( filename ) )
+		{
+			Assert.Fail( "Test file missing" );
+		}
+
+		try
+		{
+			var invalidFile = EdfFile.Open( filename );
+
+			Assert.Fail( "Expected an exception to be throw before this point" );
+		}
+		catch( Exception e )
+		{
+			Assert.IsTrue( e.Message.Contains( "Invalid number of Data Records" ) );
+		}
+	}
+
+	[TestMethod]
 	public void ReadFromCompressedArchive()
 	{
 		string filename = Path.Combine( Environment.CurrentDirectory, "Test Files", "annotations_and_signals.zip" );

@@ -109,6 +109,9 @@
       <None Update="Test Files\annotations_and_signals.zip">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Test Files\Invalid DataRecord Count.edf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

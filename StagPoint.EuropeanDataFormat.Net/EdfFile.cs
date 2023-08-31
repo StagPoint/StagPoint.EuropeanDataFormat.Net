@@ -243,6 +243,14 @@ namespace StagPoint.EDF.Net
 				Fragments.Clear();
 				
 				Header.ReadFrom( reader );
+				
+				// There are some files, such as those that are written by a ResMed CPAP machine, which can report -1 Data Records.
+				// A negative value is considered a fatal exception, while a value of zero can be safely ignored.
+				if( Header.NumberOfDataRecords < 0 )
+				{
+					throw new Exception( $"Invalid number of Data Records in file: {Header.NumberOfDataRecords}" );
+				}
+				
 				Header.AllocateSignals( this.Signals, this.AnnotationSignals );
 
 				// Ensure that EdfStandardSignal.FrequencyInHz is updated.
