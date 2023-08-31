@@ -9,7 +9,7 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
         <Title>StagPoint.EuropeanDataFormat.Net V1.0</Title>
         <Authors>StagPoint</Authors>
         <Description>Library for reading and writing European Data Format files, written entirely in C#</Description>
@@ -28,8 +28,8 @@
         <PackageTags>EDF, EDF+, European Data Format, File Format, Medical File Format</PackageTags>
         <PackageIcon>edf_edfplus_icon.png</PackageIcon>
         <PackageReleaseNotes>First public release.</PackageReleaseNotes>
-        <AssemblyVersion>1.0</AssemblyVersion>
-        <FileVersion>1.0</FileVersion>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <FileVersion>1.0.1</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
