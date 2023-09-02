@@ -511,6 +511,21 @@ namespace StagPoint.EDF.Net
 
 		private void updateSignalFrequency()
 		{
+			// Some EDF files are used to store information that isn't signal data and doesn't 
+			// have a logical "duration", so the Header.DurationOfDataRecord field will contain
+			// a zero. In these cases, we want to avoid a "divide by zero" exception when reading
+			// the files. 
+			// Examples of this can be found in ResMed CPAP data files.
+			if( Header.DurationOfDataRecord <= 0 )
+			{
+				foreach( var signal in Signals )
+				{
+					signal.FrequencyInHz = 0;
+				}
+
+				return;
+			}
+			
 			foreach( var signal in Signals )
 			{
 				signal.FrequencyInHz = signal.NumberOfSamplesPerRecord / Header.DurationOfDataRecord;
