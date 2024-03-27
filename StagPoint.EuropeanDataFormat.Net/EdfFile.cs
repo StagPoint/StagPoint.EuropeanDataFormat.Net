@@ -243,6 +243,14 @@ namespace StagPoint.EDF.Net
 				Fragments.Clear();
 				
 				Header.ReadFrom( reader );
+				
+				// There are some files, such as those that are written by a ResMed CPAP machine, which can report -1 Data Records.
+				// A negative value is considered a fatal exception, while a value of zero can be safely ignored.
+				if( Header.NumberOfDataRecords < 0 )
+				{
+					throw new Exception( $"Invalid number of Data Records in file: {Header.NumberOfDataRecords}" );
+				}
+				
 				Header.AllocateSignals( this.Signals, this.AnnotationSignals );
 
 				// Ensure that EdfStandardSignal.FrequencyInHz is updated.
@@ -503,6 +511,21 @@ namespace StagPoint.EDF.Net
 
 		private void updateSignalFrequency()
 		{
+			// Some EDF files are used to store information that isn't signal data and doesn't 
+			// have a logical "duration", so the Header.DurationOfDataRecord field will contain
+			// a zero. In these cases, we want to avoid a "divide by zero" exception when reading
+			// the files. 
+			// Examples of this can be found in ResMed CPAP data files.
+			if( Header.DurationOfDataRecord <= 0 )
+			{
+				foreach( var signal in Signals )
+				{
+					signal.FrequencyInHz = 0;
+				}
+
+				return;
+			}
+			
 			foreach( var signal in Signals )
 			{
 				signal.FrequencyInHz = signal.NumberOfSamplesPerRecord / Header.DurationOfDataRecord;

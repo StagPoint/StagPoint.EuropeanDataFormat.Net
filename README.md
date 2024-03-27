@@ -1,11 +1,10 @@
-![GitHub issues](https://img.shields.io/github/issues-closed-raw/StagPoint/StagPoint.EuropeanDataFormat.Net)
-<a href="https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/master/LICENSE">
-<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EuropeanDataFormat.Net" alt="License"/>
-</a>
+[![GitHub issues](https://img.shields.io/github/issues/StagPoint/StagPoint.EuropeanDataFormat.Net.svg)](https://GitHub.com/StagPoint/StagPoint.EuropeanDataFormat.Net/issues/)
+[![GitHub license](https://img.shields.io/github/license/StagPoint/StagPoint.EuropeanDataFormat.Net.svg)](https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/master/LICENSE)
 [![Nuget](https://img.shields.io/nuget/v/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
 [![Nuget](https://img.shields.io/nuget/dt/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/StagPoint/StagPoint.EuropeanDataFormat.Net)
 ![GitHub all releases](https://img.shields.io/github/downloads/StagPoint/StagPoint.EuropeanDataFormat.net/total)
+[![GitLab last commit](https://badgen.net/github/last-commit/StagPoint/StagPoint.EuropeanDataFormat.net/)](https://github.com/StagPoint/StagPoint.EuropeanDataFormat.net/-/commits)
 
 # StagPoint.EuropeanDataFormat.Net
 #### .NET library for reading and writing European Data File (EDF) format files

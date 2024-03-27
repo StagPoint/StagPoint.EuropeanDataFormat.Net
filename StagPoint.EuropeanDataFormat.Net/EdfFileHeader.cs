@@ -403,7 +403,7 @@ namespace StagPoint.EDF.Net
 		private void readListFromBuffer<T>( BinaryReader buffer, List<T> list, int count, Func<T> createItem ) where T : EdfAsciiField
 		{
 			list.Clear();
-			list.Capacity = count;
+			list.Capacity = Math.Max( list.Capacity, count );
 
 			for( int i = 0; i < count; i++ )
 			{
