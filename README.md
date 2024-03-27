@@ -12,7 +12,7 @@
 
 <!-- TOC -->
 * [StagPoint.EuropeanDataFormat.Net](#stagpointeuropeandataformatnet)
-      * [.NET library for reading and writing European Data File (EDF) format files](#net-library-for-reading-and-writing-european-data-file-edf-format-files)
+  * [.NET library for reading and writing European Data File (EDF) format files](#net-library-for-reading-and-writing-european-data-file-edf-format-files)
 * [Summary](#summary)
 * [Binary Distribution](#binary-distribution)
 * [European Data Format](#european-data-format)
