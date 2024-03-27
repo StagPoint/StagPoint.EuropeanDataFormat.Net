@@ -1,7 +1,5 @@
 [![GitHub issues](https://img.shields.io/github/issues/StagPoint/StagPoint.EuropeanDataFormat.Net.svg)](https://GitHub.com/StagPoint/StagPoint.EuropeanDataFormat.Net/issues/)
-<a href="https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/master/LICENSE">
-<img src="https://img.shields.io/github/license/StagPoint/StagPoint.EuropeanDataFormat.Net" alt="License"/>
-</a>
+[![GitHub license](https://img.shields.io/github/license/StagPoint/StagPoint.EuropeanDataFormat.Net.svg)](https://github.com/StagPoint/StagPoint.EuropeanDataFormat.Net/blob/master/LICENSE)
 [![Nuget](https://img.shields.io/nuget/v/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
 [![Nuget](https://img.shields.io/nuget/dt/StagPoint.EuropeanDataFormat.Net)](https://www.nuget.org/packages/StagPoint.EuropeanDataFormat.Net/)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/StagPoint/StagPoint.EuropeanDataFormat.Net)
